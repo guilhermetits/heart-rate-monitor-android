@@ -19,14 +19,14 @@ class PeripheralManager(
 
     private var advertisementCallback: AdvertiseCallback? = null
 
-    fun start(allowConenctions: Boolean = true) {
+    fun start(allowConnections: Boolean = true) {
         Timber.d("Starting advertisement")
         // TODO: Setup dependency injection
         heartRateServer = HeartRateServer(context)
         heartRateServer?.open()
 
         // TODO: separate the initialization from accepting new connections
-        if (allowConenctions) {
+        if (allowConnections) {
             allowNewConnections()
         }
     }
