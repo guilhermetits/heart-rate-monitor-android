@@ -36,7 +36,10 @@ dependencies {
     implementation Libraries.nordicBleKtx
     implementation Libraries.coroutines
     implementation Libraries.timber
+    implementation Libraries.koinCore
+
     testImplementation Libraries.junit
+
     androidTestImplementation Libraries.androidXTestJunit
     androidTestImplementation Libraries.androidXTestEspresso
 }

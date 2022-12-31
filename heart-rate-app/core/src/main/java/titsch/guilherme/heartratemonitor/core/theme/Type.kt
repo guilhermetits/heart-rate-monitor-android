@@ -1,4 +1,4 @@
-package titschkoski.guilherme.heartratemonitor.core.theme
+package titsch.guilherme.heartratemonitor.core.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

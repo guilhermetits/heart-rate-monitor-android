@@ -4,7 +4,7 @@ import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.data.Data.FORMAT_UINT16_LE
 import no.nordicsemi.android.ble.data.Data.FORMAT_UINT8
 
-object HeartRateMapper {
+internal object HeartRateMapper {
     fun map(data: Data): Int? {
         val flag = data.getIntValue(FORMAT_UINT8, FLAG_OFFSET)
         var heartRateValue: Int? = null

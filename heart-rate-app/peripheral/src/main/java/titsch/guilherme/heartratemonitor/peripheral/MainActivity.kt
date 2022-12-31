@@ -12,12 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
+import org.koin.android.ext.android.inject
 import titsch.guilherme.heartratemonitor.bluetooth.peripheral.PeripheralManager
-import titschkoski.guilherme.heartratemonitor.core.theme.HeartRateMonitorTheme
+import titsch.guilherme.heartratemonitor.core.theme.HeartRateMonitorTheme
 import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
-    private var peripheralManager: PeripheralManager? = null
+    private val peripheralManager: PeripheralManager by inject()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -31,23 +32,22 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        peripheralManager = PeripheralManager(this)
     }
 
     override fun onStart() {
         super.onStart()
-        peripheralManager?.start()
+        peripheralManager.start()
         lifecycleScope.launchWhenStarted {
             while (true) {
                 delay(timeMillis = 10000)
-                peripheralManager?.emitHeartRate(Random.nextInt(from = 40, until = 190))
+                peripheralManager.emitHeartRate(Random.nextInt(from = 40, until = 190))
             }
         }
     }
 
     override fun onStop() {
         super.onStop()
-        peripheralManager?.stop()
+        peripheralManager.stop()
     }
 }
 

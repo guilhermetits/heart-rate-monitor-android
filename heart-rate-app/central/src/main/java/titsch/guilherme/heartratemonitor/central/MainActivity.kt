@@ -12,14 +12,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 import titsch.guilherme.heartratemonitor.bluetooth.central.CentralManager
-import titschkoski.guilherme.heartratemonitor.core.theme.HeartRateMonitorTheme
+import titsch.guilherme.heartratemonitor.core.theme.HeartRateMonitorTheme
 
 class MainActivity : ComponentActivity() {
-    private var centralManager: CentralManager? = null
+    private val centralManager: CentralManager by inject()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        centralManager = CentralManager(this)
         setContent {
             HeartRateMonitorTheme {
                 // A surface container using the 'background' color from the theme
@@ -36,14 +36,14 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         lifecycleScope.launch {
-            centralManager?.start()
+            centralManager.start()
         }
     }
 
     override fun onStop() {
         super.onStop()
         lifecycleScope.launch {
-            centralManager?.stop()
+            centralManager.stop()
         }
     }
 }

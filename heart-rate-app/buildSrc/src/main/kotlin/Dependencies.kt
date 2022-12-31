@@ -9,6 +9,10 @@ object Libraries {
     const val androidXTestJunit = "androidx.test.ext:junit:1.1.4"
     const val androidXTestEspresso = "androidx.test.espresso:espresso-core:3.5.0"
 
+    const val koinCore = "io.insert-koin:koin-core:3.3.2"
+    const val koinAndroid = "io.insert-koin:koin-android:3.3.2"
+    const val koinCompose = "io.insert-koin:koin-androidx-compose:3.4.1"
+
     const val composeBom = "androidx.compose:compose-bom:2022.12.00"
     const val composeActivity = "androidx.activity:activity-compose:1.6.1"
     const val composeUi = "androidx.compose.ui:ui"

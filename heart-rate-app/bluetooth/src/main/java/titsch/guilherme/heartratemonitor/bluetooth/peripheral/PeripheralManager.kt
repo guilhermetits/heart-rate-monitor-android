@@ -1,11 +1,10 @@
 package titsch.guilherme.heartratemonitor.bluetooth.peripheral
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseData
 import android.bluetooth.le.AdvertiseSettings
-import android.content.Context
 import android.os.ParcelUuid
 import timber.log.Timber
 import titsch.guilherme.heartratemonitor.bluetooth.Constants
@@ -14,16 +13,14 @@ import titsch.guilherme.heartratemonitor.bluetooth.peripheral.server.HeartRateSe
 
 @SuppressLint("MissingPermission")
 class PeripheralManager(
-    private val context: Context,
-    private var heartRateServer: HeartRateServer? = null
+    private val bluetoothAdapter: BluetoothAdapter,
+    private var heartRateServer: HeartRateServer
 ) {
-    private var advertisementCallback: AdvertiseCallback? = null
+    private var advertisementCallback: Callback? = null
 
     fun start(allowConnections: Boolean = true) {
         Timber.d("Starting advertisement")
-        // TODO: Setup dependency injection
-        heartRateServer = HeartRateServer(context)
-        heartRateServer?.open()
+        heartRateServer.open()
 
         // TODO: separate the initialization from accepting new connections
         if (allowConnections) {
@@ -32,11 +29,9 @@ class PeripheralManager(
     }
 
     fun allowNewConnections() {
-        val bluetoothManager =
-            context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         advertisementCallback = Callback()
-        bluetoothManager.adapter?.name = DEVICE_NAME
-        bluetoothManager.adapter.bluetoothLeAdvertiser?.startAdvertising(
+        bluetoothAdapter.name = DEVICE_NAME
+        bluetoothAdapter.bluetoothLeAdvertiser.startAdvertising(
             advertisementSettings,
             advertisementData,
             advertisementCallback
@@ -45,20 +40,17 @@ class PeripheralManager(
 
     fun denyNewConnections() {
         Timber.d("Stopping  advertisement")
-        val bluetoothManager =
-            context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothManager.adapter.bluetoothLeAdvertiser?.stopAdvertising(advertisementCallback)
+        bluetoothAdapter.bluetoothLeAdvertiser.stopAdvertising(advertisementCallback)
     }
 
     fun stop() {
         denyNewConnections()
-        heartRateServer?.close()
-        heartRateServer = null
+        heartRateServer.close()
     }
 
     fun emitHeartRate(heartRateMeasurement: Int) {
         Timber.d("emitHeartRate $heartRateMeasurement")
-        heartRateServer?.notifyNewHeartRate(heartRateMeasurement)
+        heartRateServer.notifyNewHeartRate(heartRateMeasurement)
     }
 
     private val advertisementSettings

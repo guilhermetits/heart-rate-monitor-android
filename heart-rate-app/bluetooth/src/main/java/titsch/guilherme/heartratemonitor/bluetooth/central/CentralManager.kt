@@ -1,21 +1,14 @@
 package titsch.guilherme.heartratemonitor.bluetooth.central
 
-import android.bluetooth.BluetoothManager
-import android.content.Context
 import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateClient
 import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateScanner
 
-class CentralManager(context: Context) {
-    private val heartRateScanner: HeartRateScanner
-    private val heartRateClient = HeartRateClient(context)
-
-    init {
-        val bluetoothManager =
-            context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        heartRateScanner = HeartRateScanner(bluetoothManager.adapter)
-    }
+class CentralManager(
+    private val heartRateScanner: HeartRateScanner,
+    private val heartRateClient: HeartRateClient
+) {
 
     suspend fun start(connectToDevice: Boolean = true) {
         Timber.d("start $connectToDevice")

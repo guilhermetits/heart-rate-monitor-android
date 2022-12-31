@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package titschkoski.guilherme.heartratemonitor.core.theme
+package titsch.guilherme.heartratemonitor.core.theme
 
 import android.app.Activity
 import android.os.Build

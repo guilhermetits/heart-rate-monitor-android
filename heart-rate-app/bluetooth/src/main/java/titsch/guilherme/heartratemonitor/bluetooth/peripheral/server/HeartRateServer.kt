@@ -13,7 +13,10 @@ import titsch.guilherme.heartratemonitor.bluetooth.Constants
 import java.nio.charset.StandardCharsets
 
 @SuppressLint("MissingPermission")
-class HeartRateServer(private val context: Context) : BleServerManager(context), ServerObserver {
+class HeartRateServer(
+    private val connectionManagerFactory: ConnectionManagerFactory,
+    context: Context
+) : BleServerManager(context), ServerObserver {
     private val connectedClients = mutableMapOf<String, ConnectionManager>()
     override fun initializeServer(): MutableList<BluetoothGattService> {
         setServerObserver(this)
@@ -38,7 +41,8 @@ class HeartRateServer(private val context: Context) : BleServerManager(context),
     }
 
     override fun onDeviceConnectedToServer(device: BluetoothDevice) {
-        connectedClients[device.address] = ConnectionManager(context).apply {
+        Timber.d("device ${device.name} connected")
+        connectedClients[device.address] = connectionManagerFactory.create().apply {
             useServer(this@HeartRateServer)
             connect(device).enqueue()
         }
@@ -46,6 +50,7 @@ class HeartRateServer(private val context: Context) : BleServerManager(context),
 
     override fun onDeviceDisconnectedFromServer(device: BluetoothDevice) {
         // The device has disconnected. Forget it and close.
+        Timber.d("device ${device.name} disconnected")
         connectedClients.remove(device.address)?.close()
     }
 

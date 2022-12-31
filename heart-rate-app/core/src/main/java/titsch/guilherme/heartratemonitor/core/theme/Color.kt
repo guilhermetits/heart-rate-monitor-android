@@ -1,4 +1,4 @@
-package titschkoski.guilherme.heartratemonitor.core.theme
+package titsch.guilherme.heartratemonitor.core.theme
 
 import androidx.compose.ui.graphics.Color
 

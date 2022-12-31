@@ -69,6 +69,10 @@ dependencies {
 
     implementation Libraries.timber
 
+    implementation Libraries.koinCore
+    implementation Libraries.koinAndroid
+    implementation Libraries.koinCompose
+
     debugImplementation Libraries.composeDebugUiTooling
     debugImplementation Libraries.composeTestManifest
 
