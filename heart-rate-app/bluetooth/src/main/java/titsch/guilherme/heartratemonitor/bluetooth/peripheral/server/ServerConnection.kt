@@ -1,4 +1,4 @@
-package titsch.guilherme.heartratemonitor.bluetooth.server
+package titsch.guilherme.heartratemonitor.bluetooth.peripheral.server
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic

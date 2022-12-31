@@ -1,4 +1,4 @@
-package titsch.guilherme.heartratemonitor.bluetooth.server
+package titsch.guilherme.heartratemonitor.bluetooth
 
 import java.util.UUID
 

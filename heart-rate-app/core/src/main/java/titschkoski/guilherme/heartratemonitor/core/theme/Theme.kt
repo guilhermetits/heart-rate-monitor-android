@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package titsch.guilherme.heartratemonitor.peripheral.ui.theme
+package titschkoski.guilherme.heartratemonitor.core.theme
 
 import android.app.Activity
 import android.os.Build
@@ -30,7 +30,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun heartRateMonitorTheme(
+fun HeartRateMonitorTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,

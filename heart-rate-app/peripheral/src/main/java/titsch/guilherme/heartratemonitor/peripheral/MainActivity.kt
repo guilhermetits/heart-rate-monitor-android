@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
-import titsch.guilherme.heartratemonitor.bluetooth.PeripheralManager
-import titsch.guilherme.heartratemonitor.peripheral.ui.theme.heartRateMonitorTheme
+import titsch.guilherme.heartratemonitor.bluetooth.peripheral.PeripheralManager
+import titschkoski.guilherme.heartratemonitor.core.theme.HeartRateMonitorTheme
 import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
@@ -21,13 +21,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            heartRateMonitorTheme {
+            HeartRateMonitorTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    greeting("Peripheral")
+                    Greeting("Peripheral")
                 }
             }
         }
@@ -56,14 +56,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun greeting(name: String) {
+fun Greeting(name: String) {
     Text(text = "I'm the $name App!")
 }
 
 @Preview(showBackground = true)
 @Composable
-fun defaultPreview() {
-    heartRateMonitorTheme {
-        greeting("Peripheral")
+fun DefaultPreview() {
+    HeartRateMonitorTheme {
+        Greeting("Peripheral")
     }
 }

@@ -1,4 +1,4 @@
-package titsch.guilherme.heartratemonitor.bluetooth.server
+package titsch.guilherme.heartratemonitor.bluetooth.peripheral.server
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
@@ -9,10 +9,11 @@ import android.content.Context
 import no.nordicsemi.android.ble.BleServerManager
 import no.nordicsemi.android.ble.observer.ServerObserver
 import timber.log.Timber
+import titsch.guilherme.heartratemonitor.bluetooth.Constants
 import java.nio.charset.StandardCharsets
 
 @SuppressLint("MissingPermission")
-class HeartRateServer(val context: Context) : BleServerManager(context), ServerObserver {
+class HeartRateServer(private val context: Context) : BleServerManager(context), ServerObserver {
     private val serverConnections = mutableMapOf<String, ServerConnection>()
     override fun initializeServer(): MutableList<BluetoothGattService> {
         setServerObserver(this)

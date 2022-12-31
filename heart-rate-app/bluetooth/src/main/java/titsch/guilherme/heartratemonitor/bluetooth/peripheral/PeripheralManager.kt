@@ -1,4 +1,4 @@
-package titsch.guilherme.heartratemonitor.bluetooth
+package titsch.guilherme.heartratemonitor.bluetooth.peripheral
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothManager
@@ -8,8 +8,8 @@ import android.bluetooth.le.AdvertiseSettings
 import android.content.Context
 import android.os.ParcelUuid
 import timber.log.Timber
-import titsch.guilherme.heartratemonitor.bluetooth.server.Constants
-import titsch.guilherme.heartratemonitor.bluetooth.server.HeartRateServer
+import titsch.guilherme.heartratemonitor.bluetooth.Constants
+import titsch.guilherme.heartratemonitor.bluetooth.peripheral.server.HeartRateServer
 
 @SuppressLint("MissingPermission")
 class PeripheralManager(
