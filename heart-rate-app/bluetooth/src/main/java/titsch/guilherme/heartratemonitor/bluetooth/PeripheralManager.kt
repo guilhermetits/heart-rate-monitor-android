@@ -12,15 +12,26 @@ import titsch.guilherme.heartratemonitor.bluetooth.server.Constants
 import titsch.guilherme.heartratemonitor.bluetooth.server.HeartRateServer
 
 @SuppressLint("MissingPermission")
-class PeripheralManager(private val context: Context) {
+class PeripheralManager(
+    private val context: Context,
     private var heartRateServer: HeartRateServer? = null
+) {
+
     private var advertisementCallback: AdvertiseCallback? = null
 
-    fun start() {
+    fun start(allowConenctions: Boolean = true) {
         Timber.d("Starting advertisement")
+        // TODO: Setup dependency injection
         heartRateServer = HeartRateServer(context)
         heartRateServer?.open()
 
+        // TODO: separate the initialization from accepting new connections
+        if (allowConenctions) {
+            allowNewConnections()
+        }
+    }
+
+    fun allowNewConnections() {
         val bluetoothManager =
             context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         advertisementCallback = Callback()
@@ -32,12 +43,15 @@ class PeripheralManager(private val context: Context) {
         )
     }
 
-    fun stop() {
+    fun denyNewConnections() {
         Timber.d("Stopping  advertisement")
         val bluetoothManager =
             context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothManager.adapter.bluetoothLeAdvertiser?.stopAdvertising(advertisementCallback)
+    }
 
+    fun stop() {
+        denyNewConnections()
         heartRateServer?.close()
         heartRateServer = null
     }
