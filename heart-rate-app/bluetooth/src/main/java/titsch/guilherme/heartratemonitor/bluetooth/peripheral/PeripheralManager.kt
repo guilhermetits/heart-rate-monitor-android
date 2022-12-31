@@ -9,6 +9,7 @@ import android.content.Context
 import android.os.ParcelUuid
 import timber.log.Timber
 import titsch.guilherme.heartratemonitor.bluetooth.Constants
+import titsch.guilherme.heartratemonitor.bluetooth.Constants.DEVICE_NAME
 import titsch.guilherme.heartratemonitor.bluetooth.peripheral.server.HeartRateServer
 
 @SuppressLint("MissingPermission")
@@ -16,7 +17,6 @@ class PeripheralManager(
     private val context: Context,
     private var heartRateServer: HeartRateServer? = null
 ) {
-
     private var advertisementCallback: AdvertiseCallback? = null
 
     fun start(allowConnections: Boolean = true) {
@@ -35,7 +35,7 @@ class PeripheralManager(
         val bluetoothManager =
             context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         advertisementCallback = Callback()
-        bluetoothManager.adapter?.name = "HeartRate"
+        bluetoothManager.adapter?.name = DEVICE_NAME
         bluetoothManager.adapter.bluetoothLeAdvertiser?.startAdvertising(
             advertisementSettings,
             advertisementData,

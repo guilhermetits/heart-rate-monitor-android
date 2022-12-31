@@ -7,7 +7,7 @@ import no.nordicsemi.android.ble.BleManager
 import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.data.MutableData
 
-class ServerConnection(context: Context) : BleManager(context) {
+class ConnectionManager(context: Context) : BleManager(context) {
 
     private lateinit var gattCallback: GattCallback
 

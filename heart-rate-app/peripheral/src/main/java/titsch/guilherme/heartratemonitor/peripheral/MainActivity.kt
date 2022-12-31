@@ -37,11 +37,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         peripheralManager?.start()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        lifecycleScope.launchWhenResumed {
+        lifecycleScope.launchWhenStarted {
             while (true) {
                 delay(timeMillis = 10000)
                 peripheralManager?.emitHeartRate(Random.nextInt(from = 40, until = 190))

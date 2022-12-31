@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets
 
 @SuppressLint("MissingPermission")
 class HeartRateServer(private val context: Context) : BleServerManager(context), ServerObserver {
-    private val serverConnections = mutableMapOf<String, ServerConnection>()
+    private val connectedClients = mutableMapOf<String, ConnectionManager>()
     override fun initializeServer(): MutableList<BluetoothGattService> {
         setServerObserver(this)
 
@@ -27,7 +27,7 @@ class HeartRateServer(private val context: Context) : BleServerManager(context),
 
     fun notifyNewHeartRate(heartRate: Int) {
         Timber.d("notifyNewHeartRate $heartRate")
-        serverConnections.values.forEachIndexed { index, serverConnection ->
+        connectedClients.values.forEachIndexed { index, serverConnection ->
             Timber.d(
                 "notifying client ${index + 1} ${serverConnection.bluetoothDevice?.name}" +
                     " with address ${serverConnection.bluetoothDevice?.address}"
@@ -38,7 +38,7 @@ class HeartRateServer(private val context: Context) : BleServerManager(context),
     }
 
     override fun onDeviceConnectedToServer(device: BluetoothDevice) {
-        serverConnections[device.address] = ServerConnection(context).apply {
+        connectedClients[device.address] = ConnectionManager(context).apply {
             useServer(this@HeartRateServer)
             connect(device).enqueue()
         }
@@ -46,7 +46,7 @@ class HeartRateServer(private val context: Context) : BleServerManager(context),
 
     override fun onDeviceDisconnectedFromServer(device: BluetoothDevice) {
         // The device has disconnected. Forget it and close.
-        serverConnections.remove(device.address)?.close()
+        connectedClients.remove(device.address)?.close()
     }
 
     private val heartRateCharacteristic by lazy {
