@@ -13,7 +13,7 @@ This device uses the [nordicSemiconductor/pc-ble-driver-js](https://github.com/n
 ### Running the device (Mac OS)
 It requires Node js please see the complete instructions in the *pc-ble-driver-js* repository
 
-* Get the device port (I recommend using the [nRF Connect for Desktop](https://www.nordicsemi.com/Products/Development-tools/nrf-connect-for-desktop))
+* Get the device port running the  commmand (_nrfjprog --com_) (Or using the [nRF Connect for Desktop](https://www.nordicsemi.com/Products/Development-tools/nrf-connect-for-desktop))
 * replace the device port (_/dev/tty.usbmodemxxxx_) in the command below 
 
 run the following command:

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
-        android:name="titsch.guilherme.heartratemonitor.central.App"
+        android:name=".CentralApp"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -14,7 +14,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.HeartRateMonitor">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

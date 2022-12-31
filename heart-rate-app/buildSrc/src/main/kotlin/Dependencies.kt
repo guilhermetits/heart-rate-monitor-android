@@ -18,6 +18,9 @@ object Libraries {
     const val composeDebugUiTooling = "androidx.compose.ui:ui-tooling"
     const val composeTestManifest = "androidx.compose.ui:ui-test-manifest"
 
+    const val nordicBleKtx = "no.nordicsemi.android:ble-ktx:2.4.0"
+    const val timber = "com.jakewharton.timber:timber:5.0.1"
+
     const val junit = "junit:junit:4.13.2"
 }
 

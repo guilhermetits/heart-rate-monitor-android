@@ -33,6 +33,8 @@ android {
 dependencies {
 
     implementation Libraries.androidXKtx
+    implementation Libraries.nordicBleKtx
+    implementation Libraries.timber
     testImplementation Libraries.junit
     androidTestImplementation Libraries.androidXTestJunit
     androidTestImplementation Libraries.androidXTestEspresso

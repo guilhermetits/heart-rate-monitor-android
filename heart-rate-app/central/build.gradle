@@ -63,6 +63,8 @@ dependencies {
     implementation Libraries.composeUiPreview
     implementation Libraries.composeMaterial3
 
+    implementation Libraries.timber
+
     debugImplementation Libraries.composeDebugUiTooling
     debugImplementation Libraries.composeTestManifest
 
