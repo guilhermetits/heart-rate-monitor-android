@@ -28,7 +28,7 @@ class PeripheralManager(
         }
     }
 
-    fun allowNewConnections() {
+    private fun allowNewConnections() {
         advertisementCallback = Callback()
         bluetoothAdapter.name = DEVICE_NAME
         bluetoothAdapter.bluetoothLeAdvertiser.startAdvertising(
@@ -38,7 +38,7 @@ class PeripheralManager(
         )
     }
 
-    fun denyNewConnections() {
+    private fun denyNewConnections() {
         Timber.d("Stopping  advertisement")
         bluetoothAdapter.bluetoothLeAdvertiser.stopAdvertising(advertisementCallback)
     }
