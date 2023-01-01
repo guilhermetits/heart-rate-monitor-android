@@ -6,6 +6,8 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.util.Log
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.channelFlow
 import no.nordicsemi.android.ble.BleManager
 import no.nordicsemi.android.ble.ktx.suspend
 import timber.log.Timber
@@ -27,9 +29,18 @@ class HeartRateClient(context: Context) : BleManager(context) {
         }
     }
 
-    private inner class GattCallback : BleManagerGattCallback() {
-        private var heartRateCharacteristic: BluetoothGattCharacteristic? = null
+    suspend fun collectHeartRateMeasurements() = channelFlow {
+        setNotificationCallback(heartRateCharacteristic)
+            .with { _, data -> trySend(data) }
 
+        awaitClose {
+            removeNotificationCallback(heartRateCharacteristic)
+        }
+    }
+
+    private var heartRateCharacteristic: BluetoothGattCharacteristic? = null
+
+    private inner class GattCallback : BleManagerGattCallback() {
         override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
             Timber.d("Validating required properties")
             val heartRateService = gatt.getService(Constants.HEART_RATE_SERVICE_UUID)
@@ -41,13 +52,6 @@ class HeartRateClient(context: Context) : BleManager(context) {
         }
 
         override fun initialize() {
-            setNotificationCallback(heartRateCharacteristic).with { _, data ->
-                if (data.value != null) {
-                    val heartRateMeasurement = HeartRateMapper.map(data)
-                    Timber.d("New Heart Rate Measurement Received: $heartRateMeasurement")
-                }
-            }
-
             beginAtomicRequestQueue()
                 .add(enableNotifications(heartRateCharacteristic)
                          .fail { device: BluetoothDevice?, status: Int ->

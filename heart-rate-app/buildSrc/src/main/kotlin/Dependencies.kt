@@ -3,6 +3,7 @@
 import org.gradle.api.JavaVersion
 
 object Libraries {
+    const val kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0"
     const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
     const val androidXKtx = "androidx.core:core-ktx:1.9.0"
     const val androidXLifecycleKtx = "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1"

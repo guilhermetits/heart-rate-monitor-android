@@ -3,4 +3,5 @@
     <string name="central_notification_channel_name">Heart Rate Monitor Notifications</string>
     <string name="central_foreground_notification_title">Heart Rate Monitor</string>
     <string name="central_foreground_notification_content">Your Heart Rate Monitor is running…</string>
+    <string name="central_foreground_notification_action_stop">Stop</string>
 </resources>

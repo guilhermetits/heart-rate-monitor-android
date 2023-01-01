@@ -51,6 +51,8 @@ dependencies {
     implementation project(":connection_requirements")
     implementation project(":bluetooth")
 
+    implementation Libraries.kotlinStdLib
+
     implementation Libraries.androidXKtx
     implementation Libraries.androidXLifecycleKtx
 
