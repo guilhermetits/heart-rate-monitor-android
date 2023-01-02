@@ -8,7 +8,7 @@ import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.data.MutableData
 import timber.log.Timber
 
-class ConnectionManager(context: Context) : BleManager(context) {
+internal class ConnectionManager(context: Context) : BleManager(context) {
 
     private lateinit var gattCallback: GattCallback
 

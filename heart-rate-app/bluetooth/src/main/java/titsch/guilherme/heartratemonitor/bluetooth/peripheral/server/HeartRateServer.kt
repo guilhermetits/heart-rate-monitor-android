@@ -13,7 +13,7 @@ import titsch.guilherme.heartratemonitor.bluetooth.Constants
 import java.nio.charset.StandardCharsets
 
 @SuppressLint("MissingPermission")
-class HeartRateServer(
+internal class HeartRateServer(
     private val connectionManagerFactory: ConnectionManagerFactory,
     context: Context
 ) : BleServerManager(context), ServerObserver {

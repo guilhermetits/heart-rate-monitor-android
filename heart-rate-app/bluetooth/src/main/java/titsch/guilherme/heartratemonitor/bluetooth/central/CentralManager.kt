@@ -20,7 +20,7 @@ import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateMappe
 import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateScanner
 import java.util.concurrent.atomic.AtomicBoolean
 
-class CentralManager(
+class CentralManager internal constructor(
     private val heartRateScanner: HeartRateScanner,
     private val heartRateClient: HeartRateClient
 ) {

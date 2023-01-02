@@ -14,7 +14,7 @@ import timber.log.Timber
 import titsch.guilherme.heartratemonitor.bluetooth.Constants
 
 @SuppressLint("MissingPermission")
-class HeartRateClient(context: Context) : BleManager(context) {
+internal class HeartRateClient(context: Context) : BleManager(context) {
     override fun getGattCallback(): BleManagerGattCallback = GattCallback()
 
     suspend fun openConnection(device: BluetoothDevice) {

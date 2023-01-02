@@ -14,7 +14,7 @@ import titsch.guilherme.heartratemonitor.bluetooth.Constants.DEVICE_NAMES
 import titsch.guilherme.heartratemonitor.bluetooth.Constants.HEART_RATE_SERVICE_UUID
 import kotlin.coroutines.resume
 
-class HeartRateScanner(private val bluetoothAdapter: BluetoothAdapter) {
+internal class HeartRateScanner(private val bluetoothAdapter: BluetoothAdapter) {
     @SuppressLint("MissingPermission")
     suspend fun scan(): ScanResult? = suspendCancellableCoroutine { continuation ->
         val scanCallback = object : ScanCallback() {

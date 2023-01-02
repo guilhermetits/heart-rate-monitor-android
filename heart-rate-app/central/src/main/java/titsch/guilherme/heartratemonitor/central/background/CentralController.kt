@@ -9,7 +9,7 @@ import titsch.guilherme.heartratemonitor.central.usecases.CollectHRMeasurementsU
 import titsch.guilherme.heartratemonitor.central.usecases.StartBluetoothCentralUseCase
 import titsch.guilherme.heartratemonitor.central.usecases.StopBluetoothCentralUseCase
 
-class CentralController(
+internal class CentralController(
     private val collectHRMeasurementsUseCase: CollectHRMeasurementsUseCase,
     private val startBluetoothCentralUseCase: StartBluetoothCentralUseCase,
     private val stopBluetoothCentralUseCase: StopBluetoothCentralUseCase,

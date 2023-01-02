@@ -17,7 +17,7 @@ import titsch.guilherme.heartratemonitor.bluetooth.peripheral.server.HeartRateSe
 import titsch.guilherme.heartratemonitor.core.bluetooth.BluetoothStateObserver
 
 @SuppressLint("MissingPermission")
-class PeripheralManager(
+class PeripheralManager internal constructor(
     private val bluetoothAdapter: BluetoothAdapter,
     private val bluetoothStateObserver: BluetoothStateObserver,
     private val heartRateServer: HeartRateServer,

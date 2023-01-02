@@ -35,10 +35,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        // lifecycleScope.launch {
-        //     delay(5000)
         allowConnectionsUseCase()
-        // }
     }
 
     override fun onStop() {
