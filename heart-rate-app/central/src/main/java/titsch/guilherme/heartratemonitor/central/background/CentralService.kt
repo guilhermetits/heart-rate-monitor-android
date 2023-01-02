@@ -6,51 +6,26 @@ import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import timber.log.Timber
 import titsch.guilherme.heartratemonitor.central.CentralApp
 import titsch.guilherme.heartratemonitor.central.R
 import titsch.guilherme.heartratemonitor.central.ui.MainActivity
-import titsch.guilherme.heartratemonitor.central.usecases.CollectHRMeasurementsUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.StartBluetoothCentralUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.StopBluetoothCentralUseCase
 import titsch.guilherme.heartratemonitor.core.notification.NotificationManager
-import kotlin.properties.Delegates
 
 class CentralService : Service() {
 
     private val notificationManager by inject<NotificationManager>()
-    private val collectHRMeasurementsUseCase by inject<CollectHRMeasurementsUseCase>()
-    private val startBluetoothCentralUseCase by inject<StartBluetoothCentralUseCase>()
-    private val stopBluetoothCentralUseCase by inject<StopBluetoothCentralUseCase>()
-    private var coroutineScope: CoroutineScope by Delegates.notNull()
+    private val centralController by inject<CentralController>()
 
     override fun onCreate() {
         super.onCreate()
-        Timber.d("onCreate")
-        coroutineScope = CoroutineScope(Dispatchers.Main)
-
-        coroutineScope.launch {
-            Timber.d("Start BluetoothCentral")
-            startBluetoothCentralUseCase(true)
-            collectHRMeasurementsUseCase()
-        }
+        centralController.start()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Timber.d("onDestroy")
-        if (this.coroutineScope.isActive) coroutineScope.cancel()
-
-        coroutineScope.launch {
-            Timber.d("Stop BluetoothCentral")
-            stopBluetoothCentralUseCase()
-        }
+        centralController.stop()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

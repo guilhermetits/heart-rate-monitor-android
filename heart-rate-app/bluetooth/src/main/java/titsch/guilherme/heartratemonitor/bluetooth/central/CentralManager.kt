@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withTimeout
@@ -15,7 +16,6 @@ import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateClien
 import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateMapper
 import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateScanner
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.properties.Delegates
 
 class CentralManager(
     private val heartRateScanner: HeartRateScanner,
@@ -25,7 +25,8 @@ class CentralManager(
     val isInitialized get() = initialized.get()
 
     private val initialized = AtomicBoolean(false)
-    private var coroutineScope: CoroutineScope by Delegates.notNull()
+    private var coroutineScope: CoroutineScope? = null
+    private var restartConnection = false
 
     suspend fun start(connectToDevice: Boolean = true) {
         Timber.d("start $connectToDevice")
@@ -39,8 +40,9 @@ class CentralManager(
     suspend fun stop() {
         Timber.d("stop")
         checkIfInitialized()
-        coroutineScope.coroutineContext.cancelChildren()
         disconnect()
+        coroutineScope?.coroutineContext?.cancelChildren()
+        coroutineScope = null
         initialized.set(false)
     }
 
@@ -50,38 +52,43 @@ class CentralManager(
         }
     }
 
-    private suspend fun connect(): Boolean {
+    suspend fun connect() {
         Timber.d("connect")
         checkIfInitialized()
-        var connected = false
+        if (heartRateClient.isConnected) return
 
         withTimeout(timeMillis = 60000) {
             heartRateScanner.scan()?.let { scanResult ->
                 heartRateClient.openConnection(scanResult.device)
-                listenConnectionChanges()
-                connected = true
             }
+
+            coroutineScope?.let {
+                heartRateClient.collectHeartRateMeasurements().cancellable().onEach { data ->
+                    Timber.d("New Heart Rate Received")
+                    heartRateFlow.emit(HeartRateMapper.map(data))
+                }.launchIn(it)
+            }
+
+            restartConnection = true
+            listenConnectionChanges()
         }
-
-        heartRateClient.collectHeartRateMeasurements().onEach { data ->
-            Timber.d("New Heart Rate Received")
-            heartRateFlow.emit(HeartRateMapper.map(data))
-        }.launchIn(coroutineScope)
-
-        return connected
     }
 
     private fun listenConnectionChanges() {
-        heartRateClient.stateAsFlow().onEach {
-            when (it) {
-                is ConnectionState.Disconnected -> connect()
-                else -> Timber.d("Connection Update: ${it::class.simpleName}")
-            }
-        }.launchIn(coroutineScope)
+        coroutineScope?.let {
+            heartRateClient.stateAsFlow().onEach { connectionState ->
+                when (connectionState) {
+                    is ConnectionState.Connecting -> if (restartConnection) connect()
+                    is ConnectionState.Disconnected -> if (restartConnection) connect()
+                    else -> Timber.d("Connection Update: ${connectionState::class.simpleName}")
+                }
+            }.launchIn(it)
+        }
     }
 
-    private suspend fun disconnect() {
+    suspend fun disconnect() {
         Timber.d("disconnect")
+        restartConnection = false
         heartRateClient.closeConnection()
     }
 }
