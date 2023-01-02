@@ -6,6 +6,7 @@ import android.content.Context
 import no.nordicsemi.android.ble.BleManager
 import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.data.MutableData
+import timber.log.Timber
 
 class ConnectionManager(context: Context) : BleManager(context) {
 
@@ -27,6 +28,10 @@ class ConnectionManager(context: Context) : BleManager(context) {
             ).enqueue()
             super.sendNotification(serverCharacteristic, it).enqueue()
         }
+    }
+
+    override fun log(priority: Int, message: String) {
+        Timber.log(priority, message)
     }
 
     private inner class GattCallback : BleManagerGattCallback() {

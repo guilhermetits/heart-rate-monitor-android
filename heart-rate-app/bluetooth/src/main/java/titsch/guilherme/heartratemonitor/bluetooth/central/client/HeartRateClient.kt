@@ -38,6 +38,10 @@ class HeartRateClient(context: Context) : BleManager(context) {
         }
     }
 
+    override fun log(priority: Int, message: String) {
+        Timber.log(priority, message)
+    }
+
     private var heartRateCharacteristic: BluetoothGattCharacteristic? = null
 
     private inner class GattCallback : BleManagerGattCallback() {
@@ -47,8 +51,11 @@ class HeartRateClient(context: Context) : BleManager(context) {
             heartRateCharacteristic =
                 heartRateService?.getCharacteristic(Constants.HEART_RATE_CHARACTERISTIC_UUID)
             val characteristicProperties = heartRateCharacteristic?.properties ?: 0
-            return characteristicProperties and BluetoothGattCharacteristic.PROPERTY_READ != 0 &&
-                characteristicProperties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0
+            return (characteristicProperties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0).also {
+                if (!it) {
+                    Timber.w("The device doesn't have all the required properties")
+                }
+            }
         }
 
         override fun initialize() {

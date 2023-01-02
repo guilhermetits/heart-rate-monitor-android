@@ -20,7 +20,7 @@ class PeripheralController(
 ) {
     private var emissionScope: CoroutineScope? = null
 
-    fun start() {
+    suspend fun start() {
         startBluetoothPeripheralUseCase(false)
         CoroutineScope(Dispatchers.Default + Job()).also {
             generateHeartRateMeasurementUseCase(interval = 10000).cancellable().onEach {

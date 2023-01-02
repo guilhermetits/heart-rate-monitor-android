@@ -6,6 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import timber.log.Timber
 import titsch.guilherme.heartratemonitor.core.notification.NotificationManager
@@ -17,15 +21,21 @@ class PeripheralService : Service() {
 
     private val peripheralController by inject<PeripheralController>()
     private val notificationManager by inject<NotificationManager>()
+    private val serviceJob = Job()
+    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
 
     override fun onCreate() {
         super.onCreate()
-        peripheralController.start()
+
+        serviceScope.launch {
+            peripheralController.start()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         peripheralController.stop()
+        serviceJob.cancel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

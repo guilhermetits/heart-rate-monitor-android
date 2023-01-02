@@ -6,29 +6,51 @@ import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseData
 import android.bluetooth.le.AdvertiseSettings
 import android.os.ParcelUuid
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import titsch.guilherme.heartratemonitor.bluetooth.Constants
-import titsch.guilherme.heartratemonitor.bluetooth.Constants.DEVICE_NAME
+import titsch.guilherme.heartratemonitor.bluetooth.Constants.DEVICE_NAMES
 import titsch.guilherme.heartratemonitor.bluetooth.peripheral.server.HeartRateServer
+import titsch.guilherme.heartratemonitor.core.bluetooth.BluetoothStateObserver
 
 @SuppressLint("MissingPermission")
 class PeripheralManager(
     private val bluetoothAdapter: BluetoothAdapter,
-    private var heartRateServer: HeartRateServer
+    private val bluetoothStateObserver: BluetoothStateObserver,
+    private val heartRateServer: HeartRateServer,
 ) {
+    private var coroutineScope = CoroutineScope(Dispatchers.Default + Job())
     private var advertisementCallback: Callback? = null
+    private var stateObservingJob: Job? = null
 
-    fun start(allowConnections: Boolean = true) {
+    suspend fun start(allowConnections: Boolean = true) {
         heartRateServer.open()
         if (allowConnections) {
             allowNewConnections()
         }
+        stateObservingJob = coroutineScope.launch {
+            bluetoothStateObserver().collect {
+                if (it) {
+                    Timber.d("bluetooth enabled")
+                    heartRateServer.open()
+                } else {
+                    Timber.d("bluetooth disabled")
+                    denyNewConnections()
+                    heartRateServer.disconnectAllClients()
+                    heartRateServer.close()
+                }
+            }
+        }
     }
 
     fun allowNewConnections() {
+        heartRateServer.open()
         Timber.d("Starting advertisement")
         advertisementCallback = Callback()
-        bluetoothAdapter.name = DEVICE_NAME
+        bluetoothAdapter.name = DEVICE_NAMES.first()
         bluetoothAdapter.bluetoothLeAdvertiser.startAdvertising(
             advertisementSettings,
             advertisementData,
@@ -43,6 +65,7 @@ class PeripheralManager(
 
     fun stop() {
         denyNewConnections()
+        stateObservingJob?.cancel()
         heartRateServer.close()
     }
 

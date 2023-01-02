@@ -49,9 +49,17 @@ class HeartRateServer(
     }
 
     override fun onDeviceDisconnectedFromServer(device: BluetoothDevice) {
-        // The device has disconnected. Forget it and close.
         Timber.d("device ${device.name} disconnected")
         connectedClients.remove(device.address)?.close()
+    }
+
+    fun disconnectAllClients() {
+        connectedClients.values.forEach { it.close() }
+        connectedClients.clear()
+    }
+
+    override fun log(priority: Int, message: String) {
+        Timber.log(priority, message)
     }
 
     private val heartRateCharacteristic by lazy {

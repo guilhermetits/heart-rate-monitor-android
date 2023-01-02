@@ -2,12 +2,15 @@ package titsch.guilherme.heartratemonitor.bluetooth.central
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.job
 import kotlinx.coroutines.withTimeout
 import no.nordicsemi.android.ble.ktx.state.ConnectionState
 import no.nordicsemi.android.ble.ktx.stateAsFlow
@@ -25,6 +28,8 @@ class CentralManager(
     val isInitialized get() = initialized.get()
 
     private val initialized = AtomicBoolean(false)
+    private var connectJob: Job? = null
+    private var connectionChangesJob: Job? = null
     private var coroutineScope: CoroutineScope? = null
     private var restartConnection = false
 
@@ -56,15 +61,23 @@ class CentralManager(
         Timber.d("connect")
         checkIfInitialized()
         if (heartRateClient.isConnected) return
-
         withTimeout(timeMillis = 60000) {
+            connectJob = this.coroutineContext.job
             heartRateScanner.scan()?.let { scanResult ->
-                heartRateClient.openConnection(scanResult.device)
+                try {
+                    heartRateClient.openConnection(scanResult.device)
+                } catch (e: Throwable) {
+                    Timber.e(e)
+                    return@withTimeout
+                }
             }
 
+            // wait until connection state is Ready
+            heartRateClient.stateAsFlow().filterIsInstance<ConnectionState.Ready>().first()
+
             coroutineScope?.let {
-                heartRateClient.collectHeartRateMeasurements().cancellable().onEach { data ->
-                    Timber.d("New Heart Rate Received")
+                heartRateClient.collectHeartRateMeasurements().onEach { data ->
+                    Timber.d("emitting new value")
                     heartRateFlow.emit(HeartRateMapper.map(data))
                 }.launchIn(it)
             }
@@ -72,11 +85,12 @@ class CentralManager(
             restartConnection = true
             listenConnectionChanges()
         }
+        connectJob = null
     }
 
     private fun listenConnectionChanges() {
         coroutineScope?.let {
-            heartRateClient.stateAsFlow().onEach { connectionState ->
+            connectionChangesJob = heartRateClient.stateAsFlow().onEach { connectionState ->
                 when (connectionState) {
                     is ConnectionState.Connecting -> if (restartConnection) connect()
                     is ConnectionState.Disconnected -> if (restartConnection) connect()
@@ -89,6 +103,10 @@ class CentralManager(
     suspend fun disconnect() {
         Timber.d("disconnect")
         restartConnection = false
+        connectJob?.cancel()
+        connectionChangesJob?.cancel()
+        connectionChangesJob = null
+        connectJob = null
         heartRateClient.closeConnection()
     }
 }

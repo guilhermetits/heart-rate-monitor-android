@@ -3,7 +3,7 @@ package titsch.guilherme.heartratemonitor.bluetooth
 import java.util.UUID
 
 internal object Constants {
-    const val DEVICE_NAME = "HeartRate"
+    val DEVICE_NAMES = listOf("HeartRate", "Heart Rate Monitor")
 
     val CCCD_UUID = standardUUID("2902")
     val HEART_RATE_SERVICE_UUID: UUID = standardUUID("180D")

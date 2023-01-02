@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Heart Rate Simulator</string>
+    <string name="app_name">Heart Rate Peripheral</string>
     <string name="peripheral_foreground_notification_action_stop">Stop</string>
-    <string name="central_notification_channel_name">Peripheral Heart Rate Monitor Notifications</string>
-    <string name="peripheral_foreground_notification_title">Peripheral Heart Rate Monitor</string>
+    <string name="central_notification_channel_name">Peripheral Heart Rate Peripheral Notifications</string>
+    <string name="peripheral_foreground_notification_title">Peripheral Heart Rate Peripheral</string>
     <string name="peripheral_foreground_notification_content">Your Heart Rate Peripheral is running…</string>
 </resources>

@@ -7,9 +7,10 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.os.ParcelUuid
+import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
-import titsch.guilherme.heartratemonitor.bluetooth.Constants.DEVICE_NAME
+import titsch.guilherme.heartratemonitor.bluetooth.Constants.DEVICE_NAMES
 import titsch.guilherme.heartratemonitor.bluetooth.Constants.HEART_RATE_SERVICE_UUID
 import kotlin.coroutines.resume
 
@@ -20,11 +21,11 @@ class HeartRateScanner(private val bluetoothAdapter: BluetoothAdapter) {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
                 Timber.d("Device found")
                 result?.device?.name?.let { deviceName ->
-                    if (deviceName == DEVICE_NAME) {
+                    if (DEVICE_NAMES.contains(deviceName)) {
                         bluetoothAdapter.bluetoothLeScanner?.stopScan(this)
-                        continuation.resume(result)
+                        continuation.resumeIfActive(result)
                     } else {
-                        Timber.d("Found device with name $deviceName expected $DEVICE_NAME")
+                        Timber.d("Found device with name $deviceName expected one of $DEVICE_NAMES")
                     }
                 }
             }
@@ -32,7 +33,7 @@ class HeartRateScanner(private val bluetoothAdapter: BluetoothAdapter) {
             override fun onScanFailed(errorCode: Int) {
                 Timber.d("Scan failed with code $errorCode")
                 bluetoothAdapter.bluetoothLeScanner?.stopScan(this)
-                continuation.resume(null)
+                continuation.resumeIfActive(null)
             }
         }
 
@@ -60,4 +61,10 @@ class HeartRateScanner(private val bluetoothAdapter: BluetoothAdapter) {
             .Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .build()
+
+    private fun <T> CancellableContinuation<T>.resumeIfActive(value: T) {
+        if (isActive) {
+            resume(value)
+        }
+    }
 }
