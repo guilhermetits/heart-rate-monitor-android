@@ -6,53 +6,26 @@ import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import timber.log.Timber
 import titsch.guilherme.heartratemonitor.core.notification.NotificationManager
 import titsch.guilherme.heartratemonitor.peripheral.PeripheralApp
 import titsch.guilherme.heartratemonitor.peripheral.R
 import titsch.guilherme.heartratemonitor.peripheral.ui.MainActivity
-import titsch.guilherme.heartratemonitor.peripheral.usecases.EmitHeartRateMeasurementUseCase
-import titsch.guilherme.heartratemonitor.peripheral.usecases.GenerateHeartRateMeasurementUseCase
-import titsch.guilherme.heartratemonitor.peripheral.usecases.StartBluetoothPeripheralUseCase
-import titsch.guilherme.heartratemonitor.peripheral.usecases.StopBluetoothPeripheralUseCase
-import kotlin.properties.Delegates
 
 class PeripheralService : Service() {
 
-    private val startBluetoothPeripheralUseCase by inject<StartBluetoothPeripheralUseCase>()
-    private val stopBluetoothPeripheralUseCase by inject<StopBluetoothPeripheralUseCase>()
-    private val generateHeartRateMeasurementUseCase by inject<GenerateHeartRateMeasurementUseCase>()
-    private val emitHeartRateMeasurementUseCase by inject<EmitHeartRateMeasurementUseCase>()
+    private val peripheralController by inject<PeripheralController>()
     private val notificationManager by inject<NotificationManager>()
-    private var coroutineScope: CoroutineScope by Delegates.notNull()
 
     override fun onCreate() {
         super.onCreate()
-        Timber.d("onCreate")
-        coroutineScope = CoroutineScope(Dispatchers.Main)
-
-        startBluetoothPeripheralUseCase(true)
-        generateHeartRateMeasurementUseCase(interval = 10000).onEach {
-            emitHeartRateMeasurementUseCase(it)
-        }.launchIn(coroutineScope)
+        peripheralController.start()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Timber.d("onDestroy")
-        if (this.coroutineScope.isActive) coroutineScope.cancel()
-
-        coroutineScope.launch {
-            stopBluetoothPeripheralUseCase()
-        }
+        peripheralController.stop()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

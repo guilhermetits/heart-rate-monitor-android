@@ -9,7 +9,7 @@ import titsch.guilherme.heartratemonitor.bluetooth.di.peripheralModule
 import titsch.guilherme.heartratemonitor.core.di.coreModule
 import titsch.guilherme.heartratemonitor.core.notification.NotificationManager
 import titsch.guilherme.heartratemonitor.peripheral.background.PeripheralService
-import titsch.guilherme.heartratemonitor.peripheral.di.useCasesModule
+import titsch.guilherme.heartratemonitor.peripheral.di.appModule
 
 class PeripheralApp : android.app.Application() {
     override fun onCreate() {
@@ -21,7 +21,7 @@ class PeripheralApp : android.app.Application() {
         startKoin {
             androidContext(this@PeripheralApp)
             allowOverride(true)
-            modules(peripheralModule, coreModule, useCasesModule)
+            modules(appModule, peripheralModule, coreModule)
         }
 
         createNotificationChannel()

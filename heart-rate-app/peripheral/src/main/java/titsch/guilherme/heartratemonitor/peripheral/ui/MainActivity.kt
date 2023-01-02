@@ -10,9 +10,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import org.koin.android.ext.android.inject
 import titsch.guilherme.heartratemonitor.core.theme.HeartRateMonitorTheme
+import titsch.guilherme.heartratemonitor.peripheral.usecases.AllowConnectionsUseCase
+import titsch.guilherme.heartratemonitor.peripheral.usecases.DenyConnectionsUseCase
 
 class MainActivity : ComponentActivity() {
+    private val allowConnectionsUseCase by inject<AllowConnectionsUseCase>()
+    private val denyConnectionsUseCase by inject<DenyConnectionsUseCase>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -26,6 +31,19 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // lifecycleScope.launch {
+        //     delay(5000)
+        allowConnectionsUseCase()
+        // }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        denyConnectionsUseCase()
     }
 }
 

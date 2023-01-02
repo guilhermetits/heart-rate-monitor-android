@@ -19,16 +19,14 @@ class PeripheralManager(
     private var advertisementCallback: Callback? = null
 
     fun start(allowConnections: Boolean = true) {
-        Timber.d("Starting advertisement")
         heartRateServer.open()
-
-        // TODO: separate the initialization from accepting new connections
         if (allowConnections) {
             allowNewConnections()
         }
     }
 
-    private fun allowNewConnections() {
+    fun allowNewConnections() {
+        Timber.d("Starting advertisement")
         advertisementCallback = Callback()
         bluetoothAdapter.name = DEVICE_NAME
         bluetoothAdapter.bluetoothLeAdvertiser.startAdvertising(
@@ -38,8 +36,8 @@ class PeripheralManager(
         )
     }
 
-    private fun denyNewConnections() {
-        Timber.d("Stopping  advertisement")
+    fun denyNewConnections() {
+        Timber.d("Stopping advertisement")
         bluetoothAdapter.bluetoothLeAdvertiser.stopAdvertising(advertisementCallback)
     }
 
