@@ -6,9 +6,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.job
 import kotlinx.coroutines.withTimeout
@@ -19,12 +21,16 @@ import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateClien
 import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateMapper
 import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateScanner
 import java.util.concurrent.atomic.AtomicBoolean
+import titsch.guilherme.heartratemonitor.core.model.ConnectionState as ConnState
 
 class CentralManager internal constructor(
     private val heartRateScanner: HeartRateScanner,
     private val heartRateClient: HeartRateClient
 ) {
-    val heartRateFlow = MutableSharedFlow<Int>()
+    private val _heartRateFlow = MutableSharedFlow<Int>()
+    val heartRateFlow: SharedFlow<Int> = _heartRateFlow
+    private val _connectionState = MutableSharedFlow<ConnState>()
+    val connectionState: SharedFlow<ConnState> = _connectionState
     val isInitialized get() = initialized.get()
 
     private val initialized = AtomicBoolean(false)
@@ -36,6 +42,13 @@ class CentralManager internal constructor(
     suspend fun start(connectToDevice: Boolean = true) {
         Timber.d("start $connectToDevice")
         coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+            .also {
+                heartRateClient.stateAsFlow()
+                    .map { state -> state.toConnState() }
+                    .onEach { connState -> _connectionState.emit(connState) }
+                    .launchIn(it)
+            }
+
         initialized.set(true)
         if (connectToDevice) {
             connect()
@@ -78,10 +91,9 @@ class CentralManager internal constructor(
             coroutineScope?.let {
                 heartRateClient.collectHeartRateMeasurements().onEach { data ->
                     Timber.d("emitting new value")
-                    heartRateFlow.emit(HeartRateMapper.map(data))
+                    _heartRateFlow.emit(HeartRateMapper.map(data))
                 }.launchIn(it)
             }
-
             restartConnection = true
             listenConnectionChanges()
         }

@@ -16,5 +16,4 @@ rootProject.name = "HeartRateMonitor"
 include ':central'
 include ':peripheral'
 include ':bluetooth'
-include ':connection_requirements'
 include ':core'

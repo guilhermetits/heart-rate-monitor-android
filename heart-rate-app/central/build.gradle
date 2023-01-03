@@ -48,7 +48,6 @@ android {
 
 dependencies {
     implementation project(":core")
-    implementation project(":connection_requirements")
     implementation project(":bluetooth")
 
     implementation Libraries.kotlinStdLib

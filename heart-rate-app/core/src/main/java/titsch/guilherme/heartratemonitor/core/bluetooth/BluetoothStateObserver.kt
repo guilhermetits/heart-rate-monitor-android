@@ -8,7 +8,10 @@ import android.content.IntentFilter
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.channelFlow
 
-class BluetoothStateObserver(private val context: Context) {
+class BluetoothStateObserver(
+    private val bluetoothAdapter: BluetoothAdapter,
+    private val context: Context
+) {
     operator fun invoke() = channelFlow {
         val broadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent) {
@@ -28,8 +31,12 @@ class BluetoothStateObserver(private val context: Context) {
             IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         )
 
+        trySend(isEnabled())
+
         awaitClose {
             context.unregisterReceiver(broadcastReceiver)
         }
     }
+
+    fun isEnabled() = bluetoothAdapter.isEnabled
 }

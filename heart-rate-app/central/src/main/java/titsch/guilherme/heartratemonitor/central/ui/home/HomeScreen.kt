@@ -54,7 +54,7 @@ fun HomeScreenRoute(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                viewModel.refreshPermissions()
+                viewModel.refreshRequirements()
             }
         }
 
@@ -104,43 +104,50 @@ fun PermissionsRow(
     onGrantPermissionsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val icon = if (permissionsGranted) Icons.Default.Check else Icons.Default.Warning
+    val icon = if (permissionsGranted)
+        Icons.Default.Check to MaterialTheme.colorScheme.tertiary
+    else
+        Icons.Default.Warning to MaterialTheme.colorScheme.error
     val text =
         if (permissionsGranted)
             R.string.permisions_granted
         else
             R.string.missing_permissions
 
-    Column {
+    Column(
+        modifier = modifier
+            .padding(DefaultPadding)
+            .fillMaxWidth(),
+    ) {
         Row(
-            modifier = Modifier
-                .padding(DefaultPadding)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Icon(
-                imageVector = icon,
+                imageVector = icon.first,
                 contentDescription = "",
-                tint = MaterialTheme.colorScheme.onError,
-                modifier = modifier.padding(
+                tint = icon.second,
+                modifier = Modifier.padding(
                     DefaultPadding
                 )
             )
             Text(
                 text = stringResource(id = text),
                 style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.align(Alignment.CenterVertically)
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .padding(bottom = DefaultPadding)
             )
         }
-
         Button(
             onClick = onGrantPermissionsClick,
-
-            modifier = modifier
+            enabled = !permissionsGranted,
+            modifier = Modifier
                 .height(44.dp)
                 .fillMaxWidth()
         ) {
-            Text(stringResource(R.string.grant_permissions))
+            Text(
+                stringResource(R.string.grant_permissions),
+            )
         }
     }
 }
@@ -148,14 +155,14 @@ fun PermissionsRow(
 @Composable
 fun ConnectRow(connectEnabled: Boolean, onConnectClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .padding(DefaultPadding)
             .fillMaxWidth(),
     ) {
         Button(
             onClick = onConnectClick,
             enabled = connectEnabled,
-            modifier = modifier
+            modifier = Modifier
                 .height(44.dp)
                 .fillMaxWidth()
         ) {
@@ -171,14 +178,14 @@ fun DisconnectRow(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .padding(DefaultPadding)
             .fillMaxWidth(),
     ) {
         Button(
             onClick = onDisconnectClick,
             enabled = disconnectEnabled,
-            modifier = modifier
+            modifier = Modifier
                 .height(44.dp)
                 .fillMaxWidth()
         ) {
@@ -188,9 +195,9 @@ fun DisconnectRow(
 }
 
 @Composable
-fun ConnectionStateRow(connectionState: ConnectionState) {
+fun ConnectionStateRow(connectionState: ConnectionState, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .padding(DefaultPadding)
             .fillMaxWidth(),
     ) {
