@@ -52,6 +52,7 @@ dependencies {
     implementation Libraries.androidXKtx
     implementation Libraries.timber
     implementation Libraries.koinCore
+    implementation Libraries.material
 
     debugImplementation Libraries.composeDebugUiTooling
     debugImplementation Libraries.composeTestManifest

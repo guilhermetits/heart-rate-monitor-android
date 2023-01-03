@@ -8,6 +8,7 @@ import titsch.guilherme.heartratemonitor.bluetooth.BuildConfig
 import titsch.guilherme.heartratemonitor.bluetooth.di.centralModule
 import titsch.guilherme.heartratemonitor.central.background.CentralService
 import titsch.guilherme.heartratemonitor.central.di.appModule
+import titsch.guilherme.heartratemonitor.central.di.viewModelModule
 import titsch.guilherme.heartratemonitor.core.di.coreModule
 import titsch.guilherme.heartratemonitor.core.notification.NotificationManager
 
@@ -21,7 +22,7 @@ class CentralApp : android.app.Application() {
         startKoin {
             androidContext(this@CentralApp)
             allowOverride(true)
-            modules(centralModule, coreModule, appModule)
+            modules(centralModule, coreModule, appModule, viewModelModule)
         }
 
         createNotificationChannel()

@@ -4,4 +4,11 @@
     <string name="central_foreground_notification_title">Heart Rate Monitor</string>
     <string name="central_foreground_notification_content">Your Heart Rate Monitor is running…</string>
     <string name="central_foreground_notification_action_stop">Stop</string>
+    <string name="heart_rate_screen_title">Heart Rate List</string>
+    <string name="home_screen_title">Home</string>
+    <string name="missing_permissions">There are some permissions missing, fix it before using the app</string>
+    <string name="permisions_granted">All permissions granted</string>
+    <string name="grant_permissions">Grant Permissions</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
 </resources>

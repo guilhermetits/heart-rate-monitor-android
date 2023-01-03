@@ -55,8 +55,10 @@ dependencies {
     implementation project(":core")
     implementation project(":connection_requirements")
     implementation project(":bluetooth")
+
     implementation Libraries.androidXKtx
     implementation Libraries.androidXLifecycleKtx
+    implementation Libraries.androidXLifecycleCompose
 
     def composeBom = platform(Libraries.composeBom)
     implementation composeBom
@@ -72,6 +74,8 @@ dependencies {
     implementation Libraries.koinCore
     implementation Libraries.koinAndroid
     implementation Libraries.koinCompose
+
+    implementation Libraries.material
 
     debugImplementation Libraries.composeDebugUiTooling
     debugImplementation Libraries.composeTestManifest

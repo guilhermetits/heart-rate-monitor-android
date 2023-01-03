@@ -6,7 +6,8 @@ object Libraries {
     const val kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0"
     const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
     const val androidXKtx = "androidx.core:core-ktx:1.9.0"
-    const val androidXLifecycleKtx = "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1"
+    const val androidXLifecycleKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1"
+    const val androidXLifecycleCompose = "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
     const val androidXTestJunit = "androidx.test.ext:junit:1.1.4"
     const val androidXTestEspresso = "androidx.test.espresso:espresso-core:3.5.0"
 
@@ -25,6 +26,8 @@ object Libraries {
 
     const val nordicBleKtx = "no.nordicsemi.android:ble-ktx:2.4.0"
     const val timber = "com.jakewharton.timber:timber:5.0.1"
+
+    const val material = "com.google.android.material:material:1.7.0"
 
     const val junit = "junit:junit:4.13.2"
 }
