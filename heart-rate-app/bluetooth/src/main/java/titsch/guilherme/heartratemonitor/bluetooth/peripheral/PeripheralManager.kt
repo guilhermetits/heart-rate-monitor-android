@@ -34,10 +34,10 @@ class PeripheralManager internal constructor(
     private val initialized = AtomicBoolean(false)
     val isInitialized get() = initialized.get()
 
-    private val _advertisementStateFlow = MutableSharedFlow<Boolean>()
+    private val _advertisementStateFlow = MutableSharedFlow<Boolean>(replay = 1)
     val advertisementStateFlow: SharedFlow<Boolean> = _advertisementStateFlow
 
-    private val _connectedDevicesFlow = MutableSharedFlow<List<ConnectedDevice>>()
+    private val _connectedDevicesFlow = MutableSharedFlow<List<ConnectedDevice>>(replay = 1)
     val connectedDevicesFlow: SharedFlow<List<ConnectedDevice>> = _connectedDevicesFlow
 
     private var coroutineScope = CoroutineScope(Dispatchers.Default + Job())

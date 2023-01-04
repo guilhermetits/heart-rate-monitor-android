@@ -20,7 +20,8 @@ class HeartRateListViewModel(
     getAllHeartRateMeasurementFlowUseCase: GetAllHeartRateMeasurementFlowUseCase
 ) : ViewModel() {
 
-    private val _heartRateListFlow = MutableSharedFlow<List<HeartRateMeasurementUIModel>>()
+    private val _heartRateListFlow =
+        MutableSharedFlow<List<HeartRateMeasurementUIModel>>(replay = 1)
     val heartRateListFlow: StateFlow<List<HeartRateMeasurementUIModel>> =
         _heartRateListFlow.stateIn(
             scope = viewModelScope,

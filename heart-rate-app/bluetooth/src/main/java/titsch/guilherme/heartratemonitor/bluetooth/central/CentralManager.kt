@@ -28,10 +28,10 @@ class CentralManager internal constructor(
     private val heartRateScanner: HeartRateScanner,
     private val heartRateClient: HeartRateClient
 ) {
-    private val _heartRateFlow = MutableSharedFlow<Int>()
+    private val _heartRateFlow = MutableSharedFlow<Int>(replay = 1)
     val heartRateFlow: SharedFlow<Int> = _heartRateFlow
 
-    private val _connectionState = MutableSharedFlow<ConnState>()
+    private val _connectionState = MutableSharedFlow<ConnState>(replay = 1)
     val connectionState: SharedFlow<ConnState> = _connectionState
     val isInitialized get() = initialized.get()
 

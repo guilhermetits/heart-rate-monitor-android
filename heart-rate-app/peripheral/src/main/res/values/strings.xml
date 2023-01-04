@@ -11,4 +11,6 @@
     <string name="devices_screen_title">Connected Devices</string>
     <string name="connected_devices">Connected Devices:</string>
     <string name="restart_peripheral">Restart Peripheral</string>
+    <string name="name_not_found">Name not found</string>
+    <string name="alias_not_found">Alias not found</string>
 </resources>

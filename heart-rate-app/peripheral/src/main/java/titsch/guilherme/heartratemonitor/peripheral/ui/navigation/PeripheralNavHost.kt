@@ -6,7 +6,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import titsch.guilherme.heartratemonitor.peripheral.ui.devices.DevicesListScreen
+import titsch.guilherme.heartratemonitor.peripheral.ui.devices.DevicesListRoute
 import titsch.guilherme.heartratemonitor.peripheral.ui.home.HomeScreenRoute
 
 @Composable
@@ -23,7 +23,7 @@ fun PeripheralNavHost(
             HomeScreenRoute()
         }
         composable(route = Devices.route) {
-            DevicesListScreen()
+            DevicesListRoute()
         }
     }
 }

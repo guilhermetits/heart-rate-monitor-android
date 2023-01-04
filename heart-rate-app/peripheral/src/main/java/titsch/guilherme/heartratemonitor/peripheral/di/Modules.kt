@@ -4,6 +4,7 @@ import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import titsch.guilherme.heartratemonitor.peripheral.background.PeripheralController
+import titsch.guilherme.heartratemonitor.peripheral.ui.devices.DevicesListViewModel
 import titsch.guilherme.heartratemonitor.peripheral.ui.home.HomeViewModel
 import titsch.guilherme.heartratemonitor.peripheral.usecases.AllowConnectionsUseCase
 import titsch.guilherme.heartratemonitor.peripheral.usecases.DenyConnectionsUseCase
@@ -35,5 +36,6 @@ val useCaseModules = module {
 }
 
 val viewModelModule = module {
+    viewModelOf(::DevicesListViewModel)
     viewModelOf(::HomeViewModel)
 }
