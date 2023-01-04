@@ -20,10 +20,12 @@ import titsch.guilherme.heartratemonitor.peripheral.usecases.GetConnectedDevices
 import titsch.guilherme.heartratemonitor.peripheral.usecases.HasBluetoothScanPermissionUseCase
 import titsch.guilherme.heartratemonitor.peripheral.usecases.IsDeviceAdvertisingFlowUseCase
 import titsch.guilherme.heartratemonitor.peripheral.usecases.IsLocationServiceEnabledUseCase
+import titsch.guilherme.heartratemonitor.peripheral.usecases.RestartBluetoothPeripheralUseCase
 
 class HomeViewModel(
     private val allowConnectionsUseCase: AllowConnectionsUseCase,
     private val denyConnectionsUseCase: DenyConnectionsUseCase,
+    private val restartBluetoothPeripheralUseCase: RestartBluetoothPeripheralUseCase,
     private val hasBluetoothScanPermissionUseCase: HasBluetoothScanPermissionUseCase,
     private val isLocationServiceEnabledUseCase: IsLocationServiceEnabledUseCase,
     isDeviceAdvertisingFlowUseCase: IsDeviceAdvertisingFlowUseCase,
@@ -74,6 +76,10 @@ class HomeViewModel(
 
     fun denyConnections() = viewModelScope.launch {
         denyConnectionsUseCase()
+    }
+
+    fun restartPeripheral() = viewModelScope.launch {
+        restartBluetoothPeripheralUseCase()
     }
 
     fun refreshRequirements() = viewModelScope.launch {

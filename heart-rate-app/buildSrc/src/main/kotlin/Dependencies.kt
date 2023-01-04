@@ -24,6 +24,10 @@ object Libraries {
     const val composeDebugUiTooling = "androidx.compose.ui:ui-tooling"
     const val composeTestManifest = "androidx.compose.ui:ui-test-manifest"
 
+    const val roomKtx = "androidx.room:room-ktx:2.4.3"
+    const val roomRuntime = "androidx.room:room-runtime:2.4.3"
+    const val roomCompiler = "androidx.room:room-compiler:2.4.3"
+
     const val nordicBleKtx = "no.nordicsemi.android:ble-ktx:2.4.0"
     const val timber = "com.jakewharton.timber:timber:5.0.1"
 

@@ -6,7 +6,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import titsch.guilherme.heartratemonitor.central.ui.heartratelist.HeartRateListScreen
+import titsch.guilherme.heartratemonitor.central.ui.heartratelist.HeartRateListRoute
 import titsch.guilherme.heartratemonitor.central.ui.home.HomeScreenRoute
 
 @Composable
@@ -23,7 +23,7 @@ fun CentralNavHost(
             HomeScreenRoute()
         }
         composable(route = HeartRateList.route) {
-            HeartRateListScreen()
+            HeartRateListRoute()
         }
     }
 }

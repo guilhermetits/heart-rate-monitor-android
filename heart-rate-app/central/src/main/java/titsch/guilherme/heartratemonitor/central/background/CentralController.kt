@@ -5,12 +5,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import titsch.guilherme.heartratemonitor.central.usecases.CollectHRMeasurementsUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.StartBluetoothCentralUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.StopBluetoothCentralUseCase
+import titsch.guilherme.heartratemonitor.central.usecases.bluetooth.StartBluetoothCentralUseCase
+import titsch.guilherme.heartratemonitor.central.usecases.bluetooth.StopBluetoothCentralUseCase
+import titsch.guilherme.heartratemonitor.central.usecases.measurements.CollectHeartRateMeasurementsUseCase
 
 internal class CentralController(
-    private val collectHRMeasurementsUseCase: CollectHRMeasurementsUseCase,
+    private val collectHeartRateMeasurementsUseCase: CollectHeartRateMeasurementsUseCase,
     private val startBluetoothCentralUseCase: StartBluetoothCentralUseCase,
     private val stopBluetoothCentralUseCase: StopBluetoothCentralUseCase,
 ) {
@@ -21,7 +21,7 @@ internal class CentralController(
         CoroutineScope(Dispatchers.Default + Job()).also {
             it.launch {
                 startBluetoothCentralUseCase(false)
-                collectHRMeasurementsUseCase()
+                collectHeartRateMeasurementsUseCase()
             }
             coroutineScope = it
         }

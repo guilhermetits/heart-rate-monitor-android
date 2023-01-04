@@ -1,4 +1,4 @@
-package titsch.guilherme.heartratemonitor.central.usecases
+package titsch.guilherme.heartratemonitor.central.usecases.bluetooth
 
 import android.Manifest
 import android.content.Context

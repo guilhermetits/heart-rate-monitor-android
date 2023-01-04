@@ -79,6 +79,7 @@ class CentralManager internal constructor(
         if (heartRateClient.isConnected) return
         withTimeout(timeMillis = 60000) {
             connectJob = this.coroutineContext.job
+            _connectionState.emit(ConnState.SCANNING)
             heartRateScanner.scan()?.let { scanResult ->
                 try {
                     heartRateClient.openConnection(scanResult.device)
@@ -99,6 +100,9 @@ class CentralManager internal constructor(
             }
             restartConnection = true
             listenConnectionChanges()
+        }
+        if (!heartRateClient.isConnected) {
+            _connectionState.emit(ConnState.DISCONNECTED)
         }
         connectJob = null
     }
@@ -123,5 +127,6 @@ class CentralManager internal constructor(
         connectionChangesJob = null
         connectJob = null
         heartRateClient.closeConnection()
+        _connectionState.emit(ConnState.DISCONNECTED)
     }
 }

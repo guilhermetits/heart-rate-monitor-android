@@ -10,4 +10,5 @@
     <string name="deny_new_connections">Deny New Connections</string>
     <string name="devices_screen_title">Connected Devices</string>
     <string name="connected_devices">Connected Devices:</string>
+    <string name="restart_peripheral">Restart Peripheral</string>
 </resources>

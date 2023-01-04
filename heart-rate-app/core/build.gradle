@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -13,6 +14,12 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/core/schemas".toString()]
+            }
+        }
     }
 
     buildTypes {
@@ -56,6 +63,10 @@ dependencies {
     implementation Libraries.timber
     implementation Libraries.koinCore
     implementation Libraries.material
+
+    implementation Libraries.roomRuntime
+    implementation Libraries.roomKtx
+    kapt Libraries.roomCompiler
 
     debugImplementation Libraries.composeDebugUiTooling
     debugImplementation Libraries.composeTestManifest

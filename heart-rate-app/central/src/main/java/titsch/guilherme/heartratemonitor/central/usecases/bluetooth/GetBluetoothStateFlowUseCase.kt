@@ -1,4 +1,4 @@
-package titsch.guilherme.heartratemonitor.central.usecases
+package titsch.guilherme.heartratemonitor.central.usecases.bluetooth
 
 import titsch.guilherme.heartratemonitor.core.bluetooth.BluetoothStateObserver
 

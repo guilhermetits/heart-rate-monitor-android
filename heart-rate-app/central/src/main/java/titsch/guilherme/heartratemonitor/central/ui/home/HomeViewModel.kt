@@ -11,20 +11,27 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import titsch.guilherme.heartratemonitor.central.usecases.ConnectDeviceUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.DisconnectDeviceUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.GetBluetoothStateFlowUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.GetDeviceConnectionStateFlowUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.HasBluetoothScanPermissionUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.IsLocationServiceEnabledUseCase
+import titsch.guilherme.heartratemonitor.central.ui.component.HeartRateMeasurementUIModel
+import titsch.guilherme.heartratemonitor.central.ui.component.toUiModel
+import titsch.guilherme.heartratemonitor.central.usecases.bluetooth.ConnectDeviceUseCase
+import titsch.guilherme.heartratemonitor.central.usecases.bluetooth.DisconnectDeviceUseCase
+import titsch.guilherme.heartratemonitor.central.usecases.bluetooth.GetBluetoothStateFlowUseCase
+import titsch.guilherme.heartratemonitor.central.usecases.bluetooth.GetDeviceConnectionStateFlowUseCase
+import titsch.guilherme.heartratemonitor.central.usecases.bluetooth.HasBluetoothScanPermissionUseCase
+import titsch.guilherme.heartratemonitor.central.usecases.bluetooth.IsLocationServiceEnabledUseCase
+import titsch.guilherme.heartratemonitor.central.usecases.measurements.GetLastHeartRateMeasurementFlowUseCase
+import titsch.guilherme.heartratemonitor.core.date.DateProvider
 import titsch.guilherme.heartratemonitor.core.model.ConnectionState
+import titsch.guilherme.heartratemonitor.core.model.HeartRateMeasurement
 import titsch.guilherme.heartratemonitor.core.model.Requirement
 
 class HomeViewModel(
+    private val dateProvider: DateProvider,
     private val connectDeviceUseCase: ConnectDeviceUseCase,
     private val disconnectDeviceUseCase: DisconnectDeviceUseCase,
     private val hasBluetoothScanPermissionUseCase: HasBluetoothScanPermissionUseCase,
     private val isLocationServiceEnabledUseCase: IsLocationServiceEnabledUseCase,
+    getLastHeartRateMeasurementFlowUseCase: GetLastHeartRateMeasurementFlowUseCase,
     getDeviceConnectionStateFlowUseCase: GetDeviceConnectionStateFlowUseCase,
     getBluetoothStateFlowUseCase: GetBluetoothStateFlowUseCase,
 ) : ViewModel() {
@@ -33,6 +40,8 @@ class HomeViewModel(
 
     private var hasBluetoothPermissions = false
     private var locationEnabled = false
+
+    private val lastHeartRateMeasurementStateFlow = MutableStateFlow<HeartRateMeasurement?>(null)
 
     private val bluetoothStateFlow =
         getBluetoothStateFlowUseCase().onEach { updateRequirementsState(bluetoothEnabled = it) }
@@ -55,6 +64,12 @@ class HomeViewModel(
             bluetoothStateFlow.collect()
         }
         viewModelScope.launch { connectionStateFlow.collect() }
+        viewModelScope.launch {
+            getLastHeartRateMeasurementFlowUseCase().onEach {
+                lastHeartRateMeasurementStateFlow.emit(it)
+                updateRequirementsState()
+            }.collect()
+        }
         refreshRequirements()
     }
 
@@ -80,9 +95,12 @@ class HomeViewModel(
         val bluetooth = bluetoothEnabled ?: bluetoothStateFlow.value
         val allRequirementsMatch = bluetooth && locationEnabled && hasBluetoothPermissions
         val connectEnabled =
-            (connection == ConnectionState.DISCONNECTED || connection == ConnectionState.CONNECTING)
+            (connection == ConnectionState.DISCONNECTED
+                || connection == ConnectionState.CONNECTING)
                 && allRequirementsMatch
-        val disconnectEnabled = connection == ConnectionState.CONNECTED && allRequirementsMatch
+        val disconnectEnabled = (connection == ConnectionState.CONNECTED
+            || connection == ConnectionState.SCANNING
+            ) && allRequirementsMatch
         if (!bluetooth) missingRequirements.add(Requirement.BLUETOOTH)
         if (!locationEnabled) missingRequirements.add(Requirement.LOCATION)
         if (!hasBluetoothPermissions) missingRequirements.add(Requirement.BLUETOOTH_PERMISSION)
@@ -93,7 +111,10 @@ class HomeViewModel(
                 connectEnabled = connectEnabled,
                 disconnectEnabled = disconnectEnabled,
                 connectionState = connection,
-                missingRequirements = missingRequirements
+                missingRequirements = missingRequirements,
+                heartRateMeasurement = lastHeartRateMeasurementStateFlow.value?.toUiModel(
+                    dateProvider
+                )
             )
         }
     }
@@ -104,7 +125,8 @@ data class HomeState(
     val connectionState: ConnectionState,
     val connectEnabled: Boolean,
     val disconnectEnabled: Boolean,
-    val missingRequirements: List<Requirement>
+    val missingRequirements: List<Requirement>,
+    val heartRateMeasurement: HeartRateMeasurementUIModel? = null
 )
 
 val initialHomeState = HomeState(

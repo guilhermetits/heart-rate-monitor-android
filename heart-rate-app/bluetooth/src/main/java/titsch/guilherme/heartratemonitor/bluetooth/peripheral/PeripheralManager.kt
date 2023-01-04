@@ -46,9 +46,6 @@ class PeripheralManager internal constructor(
 
     suspend fun start(allowConnections: Boolean = true) {
         heartRateServer.open()
-        if (allowConnections) {
-            allowNewConnections()
-        }
         stateObservingJob = coroutineScope.launch {
             bluetoothStateObserver().collect {
                 if (it) {
@@ -68,6 +65,9 @@ class PeripheralManager internal constructor(
             .launchIn(coroutineScope)
 
         initialized.set(true)
+        if (allowConnections) {
+            allowNewConnections()
+        }
     }
 
     suspend fun allowNewConnections() {
@@ -97,8 +97,14 @@ class PeripheralManager internal constructor(
     suspend fun stop() {
         denyNewConnections()
         stateObservingJob?.cancel()
+        heartRateServer.disconnectAllClients()
         heartRateServer.close()
         initialized.set(false)
+    }
+
+    suspend fun restart() {
+        stop()
+        start(false)
     }
 
     fun emitHeartRate(heartRateMeasurement: Int) {

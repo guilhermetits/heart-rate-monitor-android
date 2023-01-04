@@ -4,12 +4,12 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +30,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import org.koin.androidx.compose.koinViewModel
 import titsch.guilherme.heartratemonitor.central.R
+import titsch.guilherme.heartratemonitor.central.ui.component.HeartRateMeasurement
+import titsch.guilherme.heartratemonitor.central.ui.component.HeartRateMeasurementUIModel
 import titsch.guilherme.heartratemonitor.core.model.ConnectionState
 import titsch.guilherme.heartratemonitor.core.model.Requirement
 import titsch.guilherme.heartratemonitor.core.theme.HeartRateMonitorTheme
@@ -73,17 +75,18 @@ fun HomeScreen(
     onAction: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+
     Column(
         modifier = modifier
             .padding(16.dp)
             .fillMaxHeight()
+            .verticalScroll(rememberScrollState())
     ) {
         Text(
             text = stringResource(id = R.string.home_screen_title),
             style = MaterialTheme.typography.titleLarge,
             modifier = modifier.fillMaxWidth()
         )
-        Spacer(Modifier.width(32.dp))
         ConnectionRequirementsActions(
             missingRequirements = homeState.missingRequirements,
             onBluetoothAction = onAction,
@@ -98,13 +101,15 @@ fun HomeScreen(
                 homeState.connectionState,
                 Modifier.padding(DefaultPadding)
             )
+            homeState.heartRateMeasurement?.let {
+                HeartRateMeasurement(heartRateMeasurement = it)
+            }
         }
         Column(
             verticalArrangement = Arrangement.Bottom,
             modifier = Modifier.fillMaxHeight()
         ) {
             ConnectRow(homeState.connectEnabled, onConnectClick)
-            Spacer(Modifier.width(12.dp))
             DisconnectRow(homeState.disconnectEnabled, onDisconnectClick)
         }
     }
@@ -157,7 +162,7 @@ fun ConnectionStateRow(connectionState: ConnectionState, modifier: Modifier = Mo
             .padding(DefaultPadding)
             .fillMaxWidth(),
     ) {
-        Text(connectionState.toString())
+        Text(connectionState.toString(), style = MaterialTheme.typography.bodyLarge)
     }
 }
 
@@ -195,7 +200,12 @@ fun HomePreviewConnectedWithPermissions() {
                     connectionState = ConnectionState.CONNECTED,
                     connectEnabled = false,
                     disconnectEnabled = true,
-                    missingRequirements = listOf()
+                    missingRequirements = listOf(),
+                    heartRateMeasurement = HeartRateMeasurementUIModel(
+                        0,
+                        "110 bpm",
+                        "2023-01-04 11:40"
+                    )
                 ),
                 onAction = {},
                 onConnectClick = {},

@@ -14,6 +14,7 @@ import titsch.guilherme.heartratemonitor.peripheral.usecases.GetConnectedDevices
 import titsch.guilherme.heartratemonitor.peripheral.usecases.HasBluetoothScanPermissionUseCase
 import titsch.guilherme.heartratemonitor.peripheral.usecases.IsDeviceAdvertisingFlowUseCase
 import titsch.guilherme.heartratemonitor.peripheral.usecases.IsLocationServiceEnabledUseCase
+import titsch.guilherme.heartratemonitor.peripheral.usecases.RestartBluetoothPeripheralUseCase
 import titsch.guilherme.heartratemonitor.peripheral.usecases.StartBluetoothPeripheralUseCase
 import titsch.guilherme.heartratemonitor.peripheral.usecases.StopBluetoothPeripheralUseCase
 
@@ -27,6 +28,7 @@ val useCaseModules = module {
     singleOf(::HasBluetoothScanPermissionUseCase)
     singleOf(::IsDeviceAdvertisingFlowUseCase)
     singleOf(::IsLocationServiceEnabledUseCase)
+    singleOf(::RestartBluetoothPeripheralUseCase)
     singleOf(::StartBluetoothPeripheralUseCase)
     singleOf(::StopBluetoothPeripheralUseCase)
     singleOf(::PeripheralController)

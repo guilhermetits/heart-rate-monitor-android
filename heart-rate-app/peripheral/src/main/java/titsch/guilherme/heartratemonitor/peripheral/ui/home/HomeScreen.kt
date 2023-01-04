@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +47,7 @@ fun HomeScreenRoute(
         homeState = homeState,
         onConnectClick = { viewModel.allowConnections() },
         onDisconnectClick = { viewModel.denyConnections() },
+        onRestartClick = { viewModel.restartPeripheral() },
         onAction = { viewModel.refreshRequirements() },
     )
     DisposableEffect(lifecycleOwner) {
@@ -68,6 +71,7 @@ fun HomeScreenRoute(
 fun HomeScreen(
     homeState: HomeState,
     onConnectClick: () -> Unit,
+    onRestartClick: () -> Unit,
     onDisconnectClick: () -> Unit,
     onAction: () -> Unit,
     modifier: Modifier = Modifier,
@@ -76,6 +80,7 @@ fun HomeScreen(
         modifier = modifier
             .padding(16.dp)
             .fillMaxHeight()
+            .verticalScroll(rememberScrollState())
     ) {
         Text(
             text = stringResource(id = R.string.home_screen_title),
@@ -103,6 +108,7 @@ fun HomeScreen(
         ) {
             AllowConnectionsRow(homeState.allowConnectionsEnabled, onConnectClick)
             DenyConnectionsRow(homeState.denyConnectionsEnabled, onDisconnectClick)
+            RestartPeripheralRow(onRestartClick)
         }
     }
 }
@@ -154,6 +160,27 @@ fun DenyConnectionsRow(
 }
 
 @Composable
+fun RestartPeripheralRow(
+    onRestartClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .padding(DefaultPadding)
+            .fillMaxWidth(),
+    ) {
+        Button(
+            onClick = onRestartClick,
+            modifier = Modifier
+                .height(44.dp)
+                .fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.restart_peripheral))
+        }
+    }
+}
+
+@Composable
 fun ConnectedDevicesRow(connectedDevices: Int, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
@@ -172,7 +199,7 @@ fun ConnectedDevicesRow(connectedDevices: Int, modifier: Modifier = Modifier) {
 fun HomePreview() {
     HeartRateMonitorTheme {
         Scaffold { innerPadding ->
-            HomeScreen(initialHomeState, {}, {}, {}, Modifier.padding(innerPadding))
+            HomeScreen(initialHomeState, {}, {}, {}, {}, Modifier.padding(innerPadding))
         }
     }
 }
@@ -183,7 +210,7 @@ fun HomePreview() {
 fun HomePreviewLight() {
     HeartRateMonitorTheme {
         Scaffold { innerPadding ->
-            HomeScreen(initialHomeState, {}, {}, {}, Modifier.padding(innerPadding))
+            HomeScreen(initialHomeState, {}, {}, {}, {}, Modifier.padding(innerPadding))
         }
     }
 }
@@ -205,6 +232,7 @@ fun HomePreviewConnectedWithPermissions() {
                 onAction = {},
                 onConnectClick = {},
                 onDisconnectClick = {},
+                onRestartClick = {},
                 modifier = Modifier.padding(innerPadding)
             )
         }
@@ -230,6 +258,7 @@ fun HomePreviewDisconnectedWithPermissions() {
                     )
                 ),
                 onAction = {},
+                onRestartClick = {},
                 onConnectClick = {},
                 onDisconnectClick = {},
                 modifier = Modifier.padding(innerPadding)
