@@ -1,0 +1,46 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'titsch.guilherme.heartratemonitor.bluetooth'
+    compileSdk BuildConfig.compileSdk
+
+    defaultConfig {
+        minSdk BuildConfig.minSdk
+        targetSdk BuildConfig.targetSdk
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility BuildConfig.javaVersion
+        targetCompatibility BuildConfig.javaVersion
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+    implementation project(":core")
+
+    implementation Libraries.androidXKtx
+    implementation Libraries.nordicBleKtx
+    implementation Libraries.coroutines
+    implementation Libraries.timber
+    implementation Libraries.koinCore
+
+    testImplementation Libraries.junit
+
+    androidTestImplementation Libraries.androidXTestJunit
+    androidTestImplementation Libraries.androidXTestEspresso
+}
