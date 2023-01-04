@@ -1,6 +1,11 @@
 package titsch.guilherme.heartratemonitor.central.ui.home
 
+import android.Manifest
 import android.content.res.Configuration
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +41,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import org.koin.androidx.compose.koinViewModel
 import titsch.guilherme.heartratemonitor.central.R
+import titsch.guilherme.heartratemonitor.core.bluetooth.BluetoothActivityContract
+import titsch.guilherme.heartratemonitor.core.bluetooth.LocationActivityContract
 import titsch.guilherme.heartratemonitor.core.model.ConnectionState
 import titsch.guilherme.heartratemonitor.core.theme.HeartRateMonitorTheme
 
@@ -45,9 +52,23 @@ fun HomeScreenRoute(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     val homeState by viewModel.homeState.collectAsState()
+
+    val launcherBluetooth = rememberLauncherForActivityResult(BluetoothActivityContract()) {
+        viewModel.refreshRequirements()
+    }
+    val launcherLocation = rememberLauncherForActivityResult(LocationActivityContract()) {
+        viewModel.refreshRequirements()
+    }
+    val launcherPermission =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+            viewModel.refreshRequirements()
+        }
+
     HomeScreen(
         homeState = homeState,
-        grantPermissionsClick = {},
+        onBluetoothClick = { launcherBluetooth.launch() },
+        onLocationClick = { launcherLocation.launch() },
+        onPermissionsClick = { launcherPermission.launch(permission) },
         onConnectClick = { viewModel.connect() },
         onDisconnectClick = { viewModel.disconnect() },
     )
@@ -71,12 +92,13 @@ fun HomeScreenRoute(
 @Composable
 fun HomeScreen(
     homeState: HomeState,
-    grantPermissionsClick: () -> Unit,
+    onBluetoothClick: () -> Unit,
+    onLocationClick: () -> Unit,
+    onPermissionsClick: () -> Unit,
     onConnectClick: () -> Unit,
     onDisconnectClick: () -> Unit,
     modifier: Modifier = Modifier,
-
-    ) {
+) {
     Column(
         modifier = modifier
             .padding(16.dp)
@@ -88,7 +110,12 @@ fun HomeScreen(
             modifier = modifier.fillMaxWidth()
         )
         Spacer(Modifier.width(32.dp))
-        PermissionsRow(homeState.allRequiredPermissionsGranted, grantPermissionsClick)
+        PermissionsRow(
+            missingRequirements = homeState.missingRequirements,
+            onBluetoothClick = onBluetoothClick,
+            onLocationClick = onLocationClick,
+            onPermissionsClick = onPermissionsClick,
+        )
         Spacer(Modifier.width(12.dp))
         ConnectRow(homeState.connectEnabled, onConnectClick)
         Spacer(Modifier.width(12.dp))
@@ -100,54 +127,65 @@ fun HomeScreen(
 
 @Composable
 fun PermissionsRow(
-    permissionsGranted: Boolean,
-    onGrantPermissionsClick: () -> Unit,
+    missingRequirements: List<Requirement>,
+    onBluetoothClick: () -> Unit,
+    onLocationClick: () -> Unit,
+    onPermissionsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val icon = if (permissionsGranted)
-        Icons.Default.Check to MaterialTheme.colorScheme.tertiary
-    else
-        Icons.Default.Warning to MaterialTheme.colorScheme.error
-    val text =
-        if (permissionsGranted)
-            R.string.permisions_granted
-        else
-            R.string.missing_permissions
-
     Column(
         modifier = modifier
             .padding(DefaultPadding)
             .fillMaxWidth(),
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
+        Column(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                imageVector = icon.first,
-                contentDescription = "",
-                tint = icon.second,
-                modifier = Modifier.padding(
-                    DefaultPadding
-                )
+            RequirementRequest(
+                requirementText = stringResource(id = R.string.enable_bluetooth),
+                isMissing = missingRequirements.contains(Requirement.BLUETOOTH),
+                onRequirementClick = onBluetoothClick
             )
-            Text(
-                text = stringResource(id = text),
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(bottom = DefaultPadding)
+            RequirementRequest(
+                requirementText = stringResource(id = R.string.enable_location),
+                isMissing = missingRequirements.contains(Requirement.LOCATION),
+                onRequirementClick = onLocationClick
+            )
+            RequirementRequest(
+                requirementText = stringResource(id = R.string.grant_permission),
+                isMissing = missingRequirements.contains(Requirement.BLUETOOTH_PERMISSION),
+                onRequirementClick = onPermissionsClick
             )
         }
-        Button(
-            onClick = onGrantPermissionsClick,
-            enabled = !permissionsGranted,
-            modifier = Modifier
-                .height(44.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                stringResource(R.string.grant_permissions),
+    }
+}
+
+@Composable
+fun RequirementRequest(
+    requirementText: String,
+    isMissing: Boolean,
+    onRequirementClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val icon = if (!isMissing) Icons.Default.Check to MaterialTheme.colorScheme.tertiary
+    else Icons.Default.Warning to MaterialTheme.colorScheme.error
+    Row(
+        modifier = modifier.padding(DefaultPadding),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon.first,
+            contentDescription = "",
+            tint = icon.second,
+            modifier = Modifier.padding(
+                DefaultPadding
             )
+        )
+        Button(
+            onClick = onRequirementClick, enabled = isMissing, modifier = Modifier.height(44.dp)
+        ) {
+            Text(requirementText)
         }
     }
 }
@@ -173,9 +211,7 @@ fun ConnectRow(connectEnabled: Boolean, onConnectClick: () -> Unit, modifier: Mo
 
 @Composable
 fun DisconnectRow(
-    disconnectEnabled: Boolean,
-    onDisconnectClick: () -> Unit,
-    modifier: Modifier = Modifier
+    disconnectEnabled: Boolean, onDisconnectClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
@@ -211,7 +247,18 @@ fun ConnectionStateRow(connectionState: ConnectionState, modifier: Modifier = Mo
 fun HomePreview() {
     HeartRateMonitorTheme {
         Scaffold { innerPadding ->
-            HomeScreen(initialHomeState, {}, {}, {}, Modifier.padding(innerPadding))
+            HomeScreen(initialHomeState, {}, {}, {}, {}, {}, Modifier.padding(innerPadding))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview("Home screen", uiMode = Configuration.UI_MODE_NIGHT_NO, device = Devices.PIXEL_4)
+@Composable
+fun HomePreviewLight() {
+    HeartRateMonitorTheme {
+        Scaffold { innerPadding ->
+            HomeScreen(initialHomeState, {}, {}, {}, {}, {}, Modifier.padding(innerPadding))
         }
     }
 }
@@ -227,9 +274,16 @@ fun HomePreviewConnectedWithPermissions() {
                     allRequiredPermissionsGranted = true,
                     connectionState = ConnectionState.CONNECTED,
                     connectEnabled = false,
-                    disconnectEnabled = true
+                    disconnectEnabled = true,
+                    missingRequirements = listOf(
+                        Requirement.BLUETOOTH,
+                        Requirement.BLUETOOTH_PERMISSION,
+                        Requirement.LOCATION
+                    )
                 ),
-                grantPermissionsClick = {},
+                onBluetoothClick = {},
+                onLocationClick = {},
+                onPermissionsClick = {},
                 onConnectClick = {},
                 onDisconnectClick = {},
                 modifier = Modifier.padding(innerPadding)
@@ -249,9 +303,16 @@ fun HomePreviewDisconnectedWithPermissions() {
                     allRequiredPermissionsGranted = true,
                     connectionState = ConnectionState.DISCONNECTED,
                     connectEnabled = true,
-                    disconnectEnabled = false
+                    disconnectEnabled = false,
+                    missingRequirements = listOf(
+                        Requirement.BLUETOOTH,
+                        Requirement.BLUETOOTH_PERMISSION,
+                        Requirement.LOCATION
+                    )
                 ),
-                grantPermissionsClick = {},
+                onBluetoothClick = {},
+                onLocationClick = {},
+                onPermissionsClick = {},
                 onConnectClick = {},
                 onDisconnectClick = {},
                 modifier = Modifier.padding(innerPadding)
@@ -261,3 +322,8 @@ fun HomePreviewDisconnectedWithPermissions() {
 }
 
 private val DefaultPadding = 12.dp
+private val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    Manifest.permission.BLUETOOTH_CONNECT
+} else {
+    Manifest.permission.ACCESS_FINE_LOCATION
+}

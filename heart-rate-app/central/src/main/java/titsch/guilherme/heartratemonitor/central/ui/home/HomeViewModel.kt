@@ -34,21 +34,19 @@ class HomeViewModel(
     private var locationEnabled = false
 
     private val bluetoothStateFlow =
-        getBluetoothStateUseCase()
-            .onEach { updateRequirementsState(it) }
+        getBluetoothStateUseCase().onEach { updateRequirementsState(it) }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
+            initialValue = false
+        )
+
+    private val connectionStateFlow =
+        getDeviceConnectionStateFlowUseCase().onEach { updateRequirementsState(connState = it) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
-                initialValue = false
+                initialValue = ConnectionState.DISCONNECTED
             )
-
-    private val connectionStateFlow = getDeviceConnectionStateFlowUseCase()
-        .onEach { updateRequirementsState(connState = it) }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
-            initialValue = ConnectionState.DISCONNECTED
-        )
 
     init {
         viewModelScope.launch {
@@ -75,21 +73,25 @@ class HomeViewModel(
     private fun updateRequirementsState(
         bluetoothEnabled: Boolean? = null, connState: ConnectionState? = null
     ) {
+        val missingRequirements = mutableListOf<Requirement>()
         val connection = connState ?: connectionStateFlow.value
-        val allRequirementsMatch =
-            bluetoothEnabled ?: bluetoothStateFlow.value && locationEnabled && hasBluetoothPermissions
-        val connectEnabled = connection == ConnectionState.DISCONNECTED && allRequirementsMatch
-        val disconnectEnabled =
-            (connection == ConnectionState.CONNECTED
-                || connection == ConnectionState.CONNECTING)
+        val bluetooth = bluetoothEnabled ?: bluetoothStateFlow.value
+        val allRequirementsMatch = bluetooth && locationEnabled && hasBluetoothPermissions
+        val connectEnabled =
+            (connection == ConnectionState.DISCONNECTED || connection == ConnectionState.CONNECTING)
                 && allRequirementsMatch
+        val disconnectEnabled = connection == ConnectionState.CONNECTED && allRequirementsMatch
+        if (!bluetooth) missingRequirements.add(Requirement.BLUETOOTH)
+        if (!locationEnabled) missingRequirements.add(Requirement.LOCATION)
+        if (!hasBluetoothPermissions) missingRequirements.add(Requirement.BLUETOOTH_PERMISSION)
 
         state.update {
             it.copy(
                 allRequiredPermissionsGranted = allRequirementsMatch,
                 connectEnabled = connectEnabled,
                 disconnectEnabled = disconnectEnabled,
-                connectionState = connection
+                connectionState = connection,
+                missingRequirements = missingRequirements
             )
         }
     }
@@ -99,12 +101,20 @@ data class HomeState(
     val allRequiredPermissionsGranted: Boolean,
     val connectionState: ConnectionState,
     val connectEnabled: Boolean,
-    val disconnectEnabled: Boolean
+    val disconnectEnabled: Boolean,
+    val missingRequirements: List<Requirement>
 )
 
 val initialHomeState = HomeState(
     allRequiredPermissionsGranted = false,
     connectionState = ConnectionState.DISCONNECTED,
     connectEnabled = false,
-    disconnectEnabled = false
+    disconnectEnabled = false,
+    missingRequirements = listOf(
+        Requirement.BLUETOOTH, Requirement.LOCATION, Requirement.BLUETOOTH_PERMISSION
+    )
 )
+
+enum class Requirement {
+    BLUETOOTH, LOCATION, BLUETOOTH_PERMISSION
+}

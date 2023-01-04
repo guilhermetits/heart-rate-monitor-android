@@ -59,6 +59,7 @@ class CentralManager internal constructor(
         Timber.d("stop")
         checkIfInitialized()
         disconnect()
+        _connectionState.emit(ConnState.DISCONNECTED)
         coroutineScope?.coroutineContext?.cancelChildren()
         coroutineScope = null
         initialized.set(false)
