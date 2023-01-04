@@ -10,12 +10,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Warning
@@ -102,7 +101,7 @@ fun HomeScreen(
     Column(
         modifier = modifier
             .padding(16.dp)
-            .verticalScroll(rememberScrollState())
+            .fillMaxHeight()
     ) {
         Text(
             text = stringResource(id = R.string.home_screen_title),
@@ -110,23 +109,34 @@ fun HomeScreen(
             modifier = modifier.fillMaxWidth()
         )
         Spacer(Modifier.width(32.dp))
-        PermissionsRow(
+        ConnectionRequirementsActions(
             missingRequirements = homeState.missingRequirements,
             onBluetoothClick = onBluetoothClick,
             onLocationClick = onLocationClick,
             onPermissionsClick = onPermissionsClick,
         )
-        Spacer(Modifier.width(12.dp))
-        ConnectRow(homeState.connectEnabled, onConnectClick)
-        Spacer(Modifier.width(12.dp))
-        DisconnectRow(homeState.disconnectEnabled, onDisconnectClick)
-        Spacer(Modifier.width(12.dp))
-        ConnectionStateRow(homeState.connectionState)
+        Column(
+            verticalArrangement = Arrangement.SpaceAround,
+
+            ) {
+            ConnectionStateRow(
+                homeState.connectionState,
+                Modifier.padding(DefaultPadding)
+            )
+        }
+        Column(
+            verticalArrangement = Arrangement.Bottom,
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            ConnectRow(homeState.connectEnabled, onConnectClick)
+            Spacer(Modifier.width(12.dp))
+            DisconnectRow(homeState.disconnectEnabled, onDisconnectClick)
+        }
     }
 }
 
 @Composable
-fun PermissionsRow(
+fun ConnectionRequirementsActions(
     missingRequirements: List<Requirement>,
     onBluetoothClick: () -> Unit,
     onLocationClick: () -> Unit,
@@ -170,20 +180,25 @@ fun RequirementRequest(
     val icon = if (!isMissing) Icons.Default.Check to MaterialTheme.colorScheme.tertiary
     else Icons.Default.Warning to MaterialTheme.colorScheme.error
     Row(
-        modifier = modifier.padding(DefaultPadding),
         horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .padding(DefaultPadding)
+            .fillMaxWidth(),
     ) {
         Icon(
             imageVector = icon.first,
             contentDescription = "",
             tint = icon.second,
-            modifier = Modifier.padding(
-                DefaultPadding
-            )
+            modifier = Modifier
+                .padding(DefaultPadding)
         )
         Button(
-            onClick = onRequirementClick, enabled = isMissing, modifier = Modifier.height(44.dp)
+            onClick = onRequirementClick,
+            enabled = isMissing,
+            modifier = Modifier
+                .height(44.dp)
+                .fillMaxWidth()
         ) {
             Text(requirementText)
         }

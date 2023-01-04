@@ -11,7 +11,6 @@ import titsch.guilherme.heartratemonitor.central.usecases.DisconnectDeviceUseCas
 import titsch.guilherme.heartratemonitor.central.usecases.GetBluetoothStateUseCase
 import titsch.guilherme.heartratemonitor.central.usecases.GetDeviceConnectionStateFlowUseCase
 import titsch.guilherme.heartratemonitor.central.usecases.HasBluetoothScanPermissionUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.IsBluetoothEnabledUseCase
 import titsch.guilherme.heartratemonitor.central.usecases.IsLocationServiceEnabledUseCase
 import titsch.guilherme.heartratemonitor.central.usecases.StartBluetoothCentralUseCase
 import titsch.guilherme.heartratemonitor.central.usecases.StopBluetoothCentralUseCase
@@ -23,7 +22,6 @@ val appModule = module {
     singleOf(::GetBluetoothStateUseCase)
     singleOf(::GetDeviceConnectionStateFlowUseCase)
     singleOf(::HasBluetoothScanPermissionUseCase)
-    singleOf(::IsBluetoothEnabledUseCase)
     singleOf(::IsLocationServiceEnabledUseCase)
     singleOf(::StartBluetoothCentralUseCase)
     singleOf(::StopBluetoothCentralUseCase)
