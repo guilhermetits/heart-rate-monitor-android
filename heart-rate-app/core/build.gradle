@@ -45,11 +45,14 @@ dependencies {
     implementation composeBom
     androidTestImplementation composeBom
 
+    implementation Libraries.composeActivity
     implementation Libraries.composeUi
     implementation Libraries.composeUiPreview
     implementation Libraries.composeMaterial3
 
     implementation Libraries.androidXKtx
+    implementation Libraries.androidXLifecycleCompose
+
     implementation Libraries.timber
     implementation Libraries.koinCore
     implementation Libraries.material

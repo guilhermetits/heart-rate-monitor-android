@@ -20,6 +20,7 @@ import timber.log.Timber
 import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateClient
 import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateMapper
 import titsch.guilherme.heartratemonitor.bluetooth.central.client.HeartRateScanner
+import titsch.guilherme.heartratemonitor.bluetooth.toConnState
 import java.util.concurrent.atomic.AtomicBoolean
 import titsch.guilherme.heartratemonitor.core.model.ConnectionState as ConnState
 
@@ -29,6 +30,7 @@ class CentralManager internal constructor(
 ) {
     private val _heartRateFlow = MutableSharedFlow<Int>()
     val heartRateFlow: SharedFlow<Int> = _heartRateFlow
+
     private val _connectionState = MutableSharedFlow<ConnState>()
     val connectionState: SharedFlow<ConnState> = _connectionState
     val isInitialized get() = initialized.get()

@@ -2,6 +2,6 @@ package titsch.guilherme.heartratemonitor.central.usecases
 
 import titsch.guilherme.heartratemonitor.core.bluetooth.BluetoothStateObserver
 
-class GetBluetoothStateUseCase(private val bluetoothStateObserver: BluetoothStateObserver) {
+class GetBluetoothStateFlowUseCase(private val bluetoothStateObserver: BluetoothStateObserver) {
     operator fun invoke() = bluetoothStateObserver()
 }

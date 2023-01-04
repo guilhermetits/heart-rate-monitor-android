@@ -32,7 +32,7 @@ internal class PeripheralController(
             }
     }
 
-    fun stop() {
+    suspend fun stop() {
         stopBluetoothPeripheralUseCase()
         emissionJob?.cancel()
         emissionJob = null

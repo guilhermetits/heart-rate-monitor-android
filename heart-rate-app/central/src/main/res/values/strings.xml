@@ -7,9 +7,6 @@
     <string name="heart_rate_screen_title">Heart Rate List</string>
     <string name="home_screen_title">Home</string>
     <string name="missing_permissions">There are some permissions missing, fix it before using the app</string>
-    <string name="grant_permission">Grant Permission</string>
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
-    <string name="enable_bluetooth">Bluetooth</string>
-    <string name="enable_location">Location</string>
 </resources>

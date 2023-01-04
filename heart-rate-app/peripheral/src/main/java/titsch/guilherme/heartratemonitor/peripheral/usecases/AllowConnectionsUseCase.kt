@@ -2,8 +2,10 @@ package titsch.guilherme.heartratemonitor.peripheral.usecases
 
 import titsch.guilherme.heartratemonitor.bluetooth.peripheral.PeripheralManager
 
-internal class AllowConnectionsUseCase(private val peripheralManager: PeripheralManager) {
-    operator fun invoke() {
-        peripheralManager.allowNewConnections()
+class AllowConnectionsUseCase(private val peripheralManager: PeripheralManager) {
+    suspend operator fun invoke() {
+        if (peripheralManager.isInitialized) {
+            peripheralManager.allowNewConnections()
+        }
     }
 }

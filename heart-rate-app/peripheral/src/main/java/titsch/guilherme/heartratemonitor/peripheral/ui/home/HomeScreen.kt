@@ -1,4 +1,4 @@
-package titsch.guilherme.heartratemonitor.central.ui.home
+package titsch.guilherme.heartratemonitor.peripheral.ui.home
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -29,11 +29,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import org.koin.androidx.compose.koinViewModel
-import titsch.guilherme.heartratemonitor.central.R
-import titsch.guilherme.heartratemonitor.core.model.ConnectionState
 import titsch.guilherme.heartratemonitor.core.model.Requirement
 import titsch.guilherme.heartratemonitor.core.theme.HeartRateMonitorTheme
 import titsch.guilherme.heartratemonitor.core.ui.ConnectionRequirementsActions
+import titsch.guilherme.heartratemonitor.peripheral.R
 
 @Composable
 fun HomeScreenRoute(
@@ -44,8 +43,8 @@ fun HomeScreenRoute(
 
     HomeScreen(
         homeState = homeState,
-        onConnectClick = { viewModel.connect() },
-        onDisconnectClick = { viewModel.disconnect() },
+        onConnectClick = { viewModel.allowConnections() },
+        onDisconnectClick = { viewModel.denyConnections() },
         onAction = { viewModel.refreshRequirements() },
     )
     DisposableEffect(lifecycleOwner) {
@@ -83,7 +82,6 @@ fun HomeScreen(
             style = MaterialTheme.typography.titleLarge,
             modifier = modifier.fillMaxWidth()
         )
-        Spacer(Modifier.width(32.dp))
         ConnectionRequirementsActions(
             missingRequirements = homeState.missingRequirements,
             onBluetoothAction = onAction,
@@ -94,8 +92,8 @@ fun HomeScreen(
             verticalArrangement = Arrangement.SpaceAround,
 
             ) {
-            ConnectionStateRow(
-                homeState.connectionState,
+            ConnectedDevicesRow(
+                homeState.connectedDevicesCount,
                 Modifier.padding(DefaultPadding)
             )
         }
@@ -103,35 +101,17 @@ fun HomeScreen(
             verticalArrangement = Arrangement.Bottom,
             modifier = Modifier.fillMaxHeight()
         ) {
-            ConnectRow(homeState.connectEnabled, onConnectClick)
-            Spacer(Modifier.width(12.dp))
-            DisconnectRow(homeState.disconnectEnabled, onDisconnectClick)
+            AllowConnectionsRow(homeState.allowConnectionsEnabled, onConnectClick)
+            DenyConnectionsRow(homeState.denyConnectionsEnabled, onDisconnectClick)
         }
     }
 }
 
 @Composable
-fun ConnectRow(connectEnabled: Boolean, onConnectClick: () -> Unit, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .padding(DefaultPadding)
-            .fillMaxWidth(),
-    ) {
-        Button(
-            onClick = onConnectClick,
-            enabled = connectEnabled,
-            modifier = Modifier
-                .height(44.dp)
-                .fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.connect))
-        }
-    }
-}
-
-@Composable
-fun DisconnectRow(
-    disconnectEnabled: Boolean, onDisconnectClick: () -> Unit, modifier: Modifier = Modifier
+fun AllowConnectionsRow(
+    allowConnectionsEnabled: Boolean,
+    onAllowConnectionsClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
@@ -139,25 +119,50 @@ fun DisconnectRow(
             .fillMaxWidth(),
     ) {
         Button(
-            onClick = onDisconnectClick,
-            enabled = disconnectEnabled,
+            onClick = onAllowConnectionsClick,
+            enabled = allowConnectionsEnabled,
             modifier = Modifier
                 .height(44.dp)
                 .fillMaxWidth()
         ) {
-            Text(stringResource(R.string.disconnect))
+            Text(stringResource(R.string.allow_new_connections))
         }
     }
 }
 
 @Composable
-fun ConnectionStateRow(connectionState: ConnectionState, modifier: Modifier = Modifier) {
+fun DenyConnectionsRow(
+    denyConnectionsEnabled: Boolean,
+    onDenyConnectionsClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .padding(DefaultPadding)
             .fillMaxWidth(),
     ) {
-        Text(connectionState.toString())
+        Button(
+            onClick = onDenyConnectionsClick,
+            enabled = denyConnectionsEnabled,
+            modifier = Modifier
+                .height(44.dp)
+                .fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.deny_new_connections))
+        }
+    }
+}
+
+@Composable
+fun ConnectedDevicesRow(connectedDevices: Int, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .padding(DefaultPadding)
+            .fillMaxWidth(),
+    ) {
+        Text(text = stringResource(id = R.string.connected_devices))
+        Spacer(Modifier.width(12.dp))
+        Text(connectedDevices.toString())
     }
 }
 
@@ -192,9 +197,9 @@ fun HomePreviewConnectedWithPermissions() {
             HomeScreen(
                 homeState = HomeState(
                     allRequiredPermissionsGranted = true,
-                    connectionState = ConnectionState.CONNECTED,
-                    connectEnabled = false,
-                    disconnectEnabled = true,
+                    connectedDevicesCount = 2,
+                    allowConnectionsEnabled = false,
+                    denyConnectionsEnabled = true,
                     missingRequirements = listOf()
                 ),
                 onAction = {},
@@ -215,9 +220,9 @@ fun HomePreviewDisconnectedWithPermissions() {
             HomeScreen(
                 homeState = HomeState(
                     allRequiredPermissionsGranted = true,
-                    connectionState = ConnectionState.DISCONNECTED,
-                    connectEnabled = true,
-                    disconnectEnabled = false,
+                    connectedDevicesCount = 0,
+                    allowConnectionsEnabled = true,
+                    denyConnectionsEnabled = false,
                     missingRequirements = listOf(
                         Requirement.BLUETOOTH,
                         Requirement.BLUETOOTH_PERMISSION,

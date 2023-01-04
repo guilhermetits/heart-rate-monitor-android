@@ -34,8 +34,10 @@ class PeripheralService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        peripheralController.stop()
-        serviceJob.cancel()
+        serviceScope.launch {
+            peripheralController.stop()
+            serviceJob.cancel()
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

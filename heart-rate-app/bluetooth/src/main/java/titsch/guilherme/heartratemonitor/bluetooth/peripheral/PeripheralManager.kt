@@ -9,12 +9,21 @@ import android.os.ParcelUuid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import titsch.guilherme.heartratemonitor.bluetooth.Constants
 import titsch.guilherme.heartratemonitor.bluetooth.Constants.DEVICE_NAMES
+import titsch.guilherme.heartratemonitor.bluetooth.central.ServiceNotStartedException
 import titsch.guilherme.heartratemonitor.bluetooth.peripheral.server.HeartRateServer
+import titsch.guilherme.heartratemonitor.bluetooth.toConnectedDevice
 import titsch.guilherme.heartratemonitor.core.bluetooth.BluetoothStateObserver
+import titsch.guilherme.heartratemonitor.core.model.ConnectedDevice
+import java.util.concurrent.atomic.AtomicBoolean
 
 @SuppressLint("MissingPermission")
 class PeripheralManager internal constructor(
@@ -22,6 +31,15 @@ class PeripheralManager internal constructor(
     private val bluetoothStateObserver: BluetoothStateObserver,
     private val heartRateServer: HeartRateServer,
 ) {
+    private val initialized = AtomicBoolean(false)
+    val isInitialized get() = initialized.get()
+
+    private val _advertisementStateFlow = MutableSharedFlow<Boolean>()
+    val advertisementStateFlow: SharedFlow<Boolean> = _advertisementStateFlow
+
+    private val _connectedDevicesFlow = MutableSharedFlow<List<ConnectedDevice>>()
+    val connectedDevicesFlow: SharedFlow<List<ConnectedDevice>> = _connectedDevicesFlow
+
     private var coroutineScope = CoroutineScope(Dispatchers.Default + Job())
     private var advertisementCallback: Callback? = null
     private var stateObservingJob: Job? = null
@@ -44,34 +62,55 @@ class PeripheralManager internal constructor(
                 }
             }
         }
+        heartRateServer.connectedDevicesFlow
+            .map { it.map { device -> device.toConnectedDevice() } }
+            .onEach { _connectedDevicesFlow.emit(it) }
+            .launchIn(coroutineScope)
+
+        initialized.set(true)
     }
 
-    fun allowNewConnections() {
+    suspend fun allowNewConnections() {
+        checkIfInitialized()
         heartRateServer.open()
         Timber.d("Starting advertisement")
         advertisementCallback = Callback()
         bluetoothAdapter.name = DEVICE_NAMES.first()
-        bluetoothAdapter.bluetoothLeAdvertiser.startAdvertising(
+        bluetoothAdapter.bluetoothLeAdvertiser?.startAdvertising(
             advertisementSettings,
             advertisementData,
             advertisementCallback
         )
+        _advertisementStateFlow.emit(true)
     }
 
-    fun denyNewConnections() {
+    suspend fun denyNewConnections() {
         Timber.d("Stopping advertisement")
-        bluetoothAdapter.bluetoothLeAdvertiser.stopAdvertising(advertisementCallback)
+        checkIfInitialized()
+        if (advertisementCallback != null) {
+            bluetoothAdapter.bluetoothLeAdvertiser?.stopAdvertising(advertisementCallback)
+            advertisementCallback = null
+        }
+        _advertisementStateFlow.emit(false)
     }
 
-    fun stop() {
+    suspend fun stop() {
         denyNewConnections()
         stateObservingJob?.cancel()
         heartRateServer.close()
+        initialized.set(false)
     }
 
     fun emitHeartRate(heartRateMeasurement: Int) {
         Timber.d("emitHeartRate $heartRateMeasurement")
+        checkIfInitialized()
         heartRateServer.notifyNewHeartRate(heartRateMeasurement)
+    }
+
+    private fun checkIfInitialized() {
+        if (!initialized.get()) {
+            throw ServiceNotStartedException()
+        }
     }
 
     private val advertisementSettings
@@ -90,13 +129,15 @@ class PeripheralManager internal constructor(
             .addServiceUuid(ParcelUuid(Constants.HEART_RATE_SERVICE_UUID))
             .build()
 
-    class Callback : AdvertiseCallback() {
+    inner class Callback : AdvertiseCallback() {
         override fun onStartFailure(errorCode: Int) {
             Timber.d("Advertisement start failed")
+            coroutineScope.launch { _advertisementStateFlow.emit(false) }
         }
 
         override fun onStartSuccess(settingsInEffect: AdvertiseSettings?) {
             Timber.d("Advertisement start success")
+            coroutineScope.launch { _advertisementStateFlow.emit(true) }
         }
     }
 }

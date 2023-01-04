@@ -1,4 +1,4 @@
-package titsch.guilherme.heartratemonitor.central.ui.home
+package titsch.guilherme.heartratemonitor.peripheral.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,25 +7,27 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import titsch.guilherme.heartratemonitor.central.usecases.ConnectDeviceUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.DisconnectDeviceUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.GetBluetoothStateFlowUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.GetDeviceConnectionStateFlowUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.HasBluetoothScanPermissionUseCase
-import titsch.guilherme.heartratemonitor.central.usecases.IsLocationServiceEnabledUseCase
-import titsch.guilherme.heartratemonitor.core.model.ConnectionState
 import titsch.guilherme.heartratemonitor.core.model.Requirement
+import titsch.guilherme.heartratemonitor.peripheral.usecases.AllowConnectionsUseCase
+import titsch.guilherme.heartratemonitor.peripheral.usecases.DenyConnectionsUseCase
+import titsch.guilherme.heartratemonitor.peripheral.usecases.GetBluetoothStateFlowUseCase
+import titsch.guilherme.heartratemonitor.peripheral.usecases.GetConnectedDevicesFlowUseCase
+import titsch.guilherme.heartratemonitor.peripheral.usecases.HasBluetoothScanPermissionUseCase
+import titsch.guilherme.heartratemonitor.peripheral.usecases.IsDeviceAdvertisingFlowUseCase
+import titsch.guilherme.heartratemonitor.peripheral.usecases.IsLocationServiceEnabledUseCase
 
 class HomeViewModel(
-    private val connectDeviceUseCase: ConnectDeviceUseCase,
-    private val disconnectDeviceUseCase: DisconnectDeviceUseCase,
+    private val allowConnectionsUseCase: AllowConnectionsUseCase,
+    private val denyConnectionsUseCase: DenyConnectionsUseCase,
     private val hasBluetoothScanPermissionUseCase: HasBluetoothScanPermissionUseCase,
     private val isLocationServiceEnabledUseCase: IsLocationServiceEnabledUseCase,
-    getDeviceConnectionStateFlowUseCase: GetDeviceConnectionStateFlowUseCase,
+    isDeviceAdvertisingFlowUseCase: IsDeviceAdvertisingFlowUseCase,
+    getConnectedDevicesFlowUseCase: GetConnectedDevicesFlowUseCase,
     getBluetoothStateFlowUseCase: GetBluetoothStateFlowUseCase,
 ) : ViewModel() {
     private val state = MutableStateFlow(initialHomeState)
@@ -42,28 +44,36 @@ class HomeViewModel(
                 initialValue = false
             )
 
-    private val connectionStateFlow =
-        getDeviceConnectionStateFlowUseCase().onEach { updateRequirementsState(connState = it) }
+    private val advertisingStateFlow =
+        isDeviceAdvertisingFlowUseCase().onEach { updateRequirementsState(isAdvertising = it) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
-                initialValue = ConnectionState.DISCONNECTED
+                initialValue = false
+            )
+    private val connectedDevicesStateFlow =
+        getConnectedDevicesFlowUseCase()
+            .map { it.count() }
+            .onEach { updateRequirementsState(connectedDevices = it) }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
+                initialValue = 0
             )
 
     init {
-        viewModelScope.launch {
-            bluetoothStateFlow.collect()
-        }
-        viewModelScope.launch { connectionStateFlow.collect() }
+        viewModelScope.launch { bluetoothStateFlow.collect() }
+        viewModelScope.launch { connectedDevicesStateFlow.collect() }
+        viewModelScope.launch { advertisingStateFlow.collect() }
         refreshRequirements()
     }
 
-    fun connect() = viewModelScope.launch {
-        connectDeviceUseCase()
+    fun allowConnections() = viewModelScope.launch {
+        allowConnectionsUseCase()
     }
 
-    fun disconnect() = viewModelScope.launch {
-        disconnectDeviceUseCase()
+    fun denyConnections() = viewModelScope.launch {
+        denyConnectionsUseCase()
     }
 
     fun refreshRequirements() = viewModelScope.launch {
@@ -73,16 +83,15 @@ class HomeViewModel(
     }
 
     private fun updateRequirementsState(
-        bluetoothEnabled: Boolean? = null, connState: ConnectionState? = null
+        bluetoothEnabled: Boolean? = null,
+        connectedDevices: Int? = null,
+        isAdvertising: Boolean? = null
     ) {
+        val advertising = isAdvertising ?: advertisingStateFlow.value
+        val devices = connectedDevices ?: connectedDevicesStateFlow.value
         val missingRequirements = mutableListOf<Requirement>()
-        val connection = connState ?: connectionStateFlow.value
         val bluetooth = bluetoothEnabled ?: bluetoothStateFlow.value
         val allRequirementsMatch = bluetooth && locationEnabled && hasBluetoothPermissions
-        val connectEnabled =
-            (connection == ConnectionState.DISCONNECTED || connection == ConnectionState.CONNECTING)
-                && allRequirementsMatch
-        val disconnectEnabled = connection == ConnectionState.CONNECTED && allRequirementsMatch
         if (!bluetooth) missingRequirements.add(Requirement.BLUETOOTH)
         if (!locationEnabled) missingRequirements.add(Requirement.LOCATION)
         if (!hasBluetoothPermissions) missingRequirements.add(Requirement.BLUETOOTH_PERMISSION)
@@ -90,9 +99,9 @@ class HomeViewModel(
         state.update {
             it.copy(
                 allRequiredPermissionsGranted = allRequirementsMatch,
-                connectEnabled = connectEnabled,
-                disconnectEnabled = disconnectEnabled,
-                connectionState = connection,
+                allowConnectionsEnabled = !advertising,
+                denyConnectionsEnabled = advertising,
+                connectedDevicesCount = devices,
                 missingRequirements = missingRequirements
             )
         }
@@ -101,17 +110,17 @@ class HomeViewModel(
 
 data class HomeState(
     val allRequiredPermissionsGranted: Boolean,
-    val connectionState: ConnectionState,
-    val connectEnabled: Boolean,
-    val disconnectEnabled: Boolean,
+    val connectedDevicesCount: Int,
+    val allowConnectionsEnabled: Boolean,
+    val denyConnectionsEnabled: Boolean,
     val missingRequirements: List<Requirement>
 )
 
 val initialHomeState = HomeState(
     allRequiredPermissionsGranted = false,
-    connectionState = ConnectionState.DISCONNECTED,
-    connectEnabled = false,
-    disconnectEnabled = false,
+    connectedDevicesCount = 0,
+    allowConnectionsEnabled = false,
+    denyConnectionsEnabled = false,
     missingRequirements = listOf(
         Requirement.BLUETOOTH, Requirement.LOCATION, Requirement.BLUETOOTH_PERMISSION
     )

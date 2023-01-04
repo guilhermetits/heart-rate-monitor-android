@@ -1,5 +1,6 @@
 package titsch.guilherme.heartratemonitor.bluetooth.peripheral.server
 
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
@@ -8,7 +9,8 @@ import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.data.MutableData
 import timber.log.Timber
 
-internal class ConnectionManager(context: Context) : BleManager(context) {
+internal class ConnectionManager(val device: BluetoothDevice, context: Context) :
+    BleManager(context) {
 
     private lateinit var gattCallback: GattCallback
 

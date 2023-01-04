@@ -1,6 +1,8 @@
-package titsch.guilherme.heartratemonitor.bluetooth.central
+package titsch.guilherme.heartratemonitor.bluetooth
 
+import android.bluetooth.BluetoothDevice
 import no.nordicsemi.android.ble.ktx.state.ConnectionState
+import titsch.guilherme.heartratemonitor.core.model.ConnectedDevice
 import titsch.guilherme.heartratemonitor.core.model.ConnectionState as ConnState
 
 internal fun ConnectionState.toConnState(): ConnState {
@@ -11,4 +13,8 @@ internal fun ConnectionState.toConnState(): ConnState {
         ConnectionState.Disconnecting -> ConnState.DISCONNECTED
         is ConnectionState.Disconnected -> ConnState.DISCONNECTED
     }
+}
+
+internal fun BluetoothDevice.toConnectedDevice(): ConnectedDevice {
+    return ConnectedDevice(this.address)
 }

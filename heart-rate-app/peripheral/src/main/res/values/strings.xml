@@ -4,4 +4,10 @@
     <string name="central_notification_channel_name">Peripheral Heart Rate Peripheral Notifications</string>
     <string name="peripheral_foreground_notification_title">Peripheral Heart Rate Peripheral</string>
     <string name="peripheral_foreground_notification_content">Your Heart Rate Peripheral is running…</string>
+    <string name="home_screen_title">Home</string>
+    <string name="connected_devices_list">Connected Devices</string>
+    <string name="allow_new_connections">Allow New Connections</string>
+    <string name="deny_new_connections">Deny New Connections</string>
+    <string name="devices_screen_title">Connected Devices</string>
+    <string name="connected_devices">Connected Devices:</string>
 </resources>

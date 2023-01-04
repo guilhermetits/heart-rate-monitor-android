@@ -6,6 +6,12 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.content.Context
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.launch
 import no.nordicsemi.android.ble.BleServerManager
 import no.nordicsemi.android.ble.observer.ServerObserver
 import timber.log.Timber
@@ -18,6 +24,10 @@ internal class HeartRateServer(
     context: Context
 ) : BleServerManager(context), ServerObserver {
     private val connectedClients = mutableMapOf<String, ConnectionManager>()
+    private val _connectedDevicesFlow = MutableSharedFlow<List<BluetoothDevice>>()
+    val connectedDevicesFlow: SharedFlow<List<BluetoothDevice>> = _connectedDevicesFlow
+    private val coroutineScope = CoroutineScope(Dispatchers.Default + Job())
+
     override fun initializeServer(): MutableList<BluetoothGattService> {
         setServerObserver(this)
 
@@ -42,24 +52,31 @@ internal class HeartRateServer(
 
     override fun onDeviceConnectedToServer(device: BluetoothDevice) {
         Timber.d("device ${device.name} connected")
-        connectedClients[device.address] = connectionManagerFactory.create().apply {
+        connectedClients[device.address] = connectionManagerFactory.create(device).apply {
             useServer(this@HeartRateServer)
             connect(device).enqueue()
         }
+        emitConnectedDevices()
     }
 
     override fun onDeviceDisconnectedFromServer(device: BluetoothDevice) {
         Timber.d("device ${device.name} disconnected")
         connectedClients.remove(device.address)?.close()
+        emitConnectedDevices()
     }
 
     fun disconnectAllClients() {
         connectedClients.values.forEach { it.close() }
         connectedClients.clear()
+        emitConnectedDevices()
     }
 
     override fun log(priority: Int, message: String) {
         Timber.log(priority, message)
+    }
+
+    private fun emitConnectedDevices() {
+        coroutineScope.launch { _connectedDevicesFlow.emit(connectedClients.values.map { it.device }) }
     }
 
     private val heartRateCharacteristic by lazy {
