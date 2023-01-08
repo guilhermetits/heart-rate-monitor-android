@@ -1,8 +1,27 @@
 # heart-rate-monitor-android
-An Android Bluetooth Heart Rate Monitor
+An Android Bluetooth Heart Rate Monitor Simulator
+There are 2 apps one working as a Bluetooth Central and the other as an Bluetooth Peripheral
+
+## Testing the connection
+* Start the Peripheral App
+* Make sure all connection requirements a ready
+* Allow New Connections
+
+* Start the Central App
+* Make sure all connection requirements a ready
+* Connect
+
+#Apps
+* [Central](heart-rate-app/central) [![Build Status](https://app.bitrise.io/app/117b0dde3425a228/status.svg?token=8_ZKZKjRpAk9Q1-_7CPNPg&branch=development)](https://app.bitrise.io/app/117b0dde3425a228)
+* [Peripheral](heart-rate-app/peripheral) [![Build Status](https://app.bitrise.io/app/848c91c98aae0a07/status.svg?token=GV9nugoeB2jU2ncUpdUhcw&branch=development)](https://app.bitrise.io/app/848c91c98aae0a07)
 
 
-# Setup the Bluetooth device
+
+
+Alternatively, instead of using the android peripheral, an embedded device is also available at [heart-rate-device](heart-rate-device/index.js)
+
+
+# Setup the [heart-rate-device](heart-rate-device/index.js) bluetooth device
 Use any device that implements the `Bluetooth Heart Rate Profile` containing the `Heart Rate Service` and the `Device Information Service`
 
 ## Using the Device available in [heart-rate-device](heart-rate-device/index.js)
